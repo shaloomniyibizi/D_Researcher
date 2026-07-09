@@ -1,0 +1,16 @@
+---
+description: Project repository rules
+globs: ["features/repository/**/*"]
+alwaysApply: false
+---
+
+STORE:
+- Past projects
+- Research papers
+- Capstone reports
+
+FEATURES:
+- Semantic search
+- Duplicate detection
+- Filtering by year, tech, supervisor
+- AI recommendations

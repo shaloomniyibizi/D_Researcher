@@ -1,0 +1,12 @@
+---
+description: Documentation rules
+globs: ["**/*"]
+alwaysApply: false
+---
+
+EVERY FEATURE MUST INCLUDE:
+- README
+- docs
+- Architecture notes
+- Usage examples
+- Environment variables

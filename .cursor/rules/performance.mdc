@@ -1,0 +1,16 @@
+---
+description: Performance rules
+globs: ["**/*"]
+alwaysApply: false
+---
+
+OPTIMIZE:
+- lazy loading
+- caching
+- pagination
+- debouncing
+- memoization
+- code splitting
+
+RULE:
+- avoid unnecessary renders

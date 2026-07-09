@@ -1,0 +1,28 @@
+---
+description: TypeScript and code style standards
+globs: ["**/*.ts", "**/*.tsx"]
+alwaysApply: false
+---
+
+# TypeScript Standards
+
+- Always use TypeScript strict mode
+- Never use `any` — use `unknown` and narrow with type guards
+- Prefer `type` over `interface` for object shapes unless extending
+- Use Zod for all runtime validation and infer types with `z.infer<typeof schema>`
+- Export types from a `types.ts` file within each feature folder
+- Use `satisfies` operator to validate objects against types without widening
+- Prefer named exports over default exports
+- Use `const` assertions where applicable
+
+## Naming Conventions
+- Components:  PascalCase  (e.g. `ResearchCard`)
+- Functions:   camelCase   (e.g. `generateProposal`)
+- Constants:   UPPER_SNAKE (e.g. `MAX_CHUNK_SIZE`)
+- DB models:   PascalCase  (Prisma convention)
+- Files:       kebab-case  (e.g. `research-card.tsx`)
+
+## Error Handling
+- Always return typed Result objects: `{ success: true, data } | { success: false, error }`
+- Never throw in Server Actions — return error states
+- Use try/catch only at infrastructure boundaries

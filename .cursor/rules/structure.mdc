@@ -1,0 +1,51 @@
+---
+description: Project folder structure reference
+alwaysApply: true
+---
+
+# Folder Structure
+app/                          # Next.js App Router
+├── (auth)/                   # Auth route group
+├── (dashboard)/              # Dashboard route group
+│   ├── student/
+│   ├── supervisor/
+│   └── admin/
+└── api/                      # API routes (webhooks only)
+components/
+├── ui/                       # Shadcn components
+└── shared/                   # Shared app components
+features/                     # Feature modules
+├── auth/
+├── projects/
+├── ai/
+│   ├── chains/
+│   ├── prompts/
+│   └── services/
+├── collaboration/
+├── evaluation/
+└── knowledge-base/
+lib/                          # Shared infrastructure
+├── auth.ts
+├── prisma.ts
+├── redis.ts
+├── gemini.ts
+├── pinecone.ts
+└── socket-server.ts
+hooks/                        # Shared React hooks
+types/                        # Global TypeScript types 
+proxy.ts                   # Route protection
+prisma/
+├── schema.prisma
+└── migrations/
+.cursor/
+└── rules/
+    ├── project-conventions.mdc
+    ├── typescript.mdc
+    ├── nextjs.mdc
+    ├── server-actions.mdc
+    ├── database.mdc
+    ├── auth.mdc
+    ├── ai.mdc
+    ├── components.mdc
+    ├── realtime.mdc
+    └── structure.mdc

@@ -1,0 +1,89 @@
+---
+description: UI conventions — shadcn (radix-lyra), Tailwind v4, and component patterns
+globs: components/**,app/**/*.tsx,app/globals.css
+alwaysApply: false
+---
+
+# UI & Component Conventions
+
+## Stack
+
+- **shadcn/ui** with `radix-lyra` style (`components.json`)
+- **Tailwind CSS v4** — config lives in `app/globals.css`, not a separate `tailwind.config`
+- **Icons**: Lucide React (`lucide-react`)
+- **RSC**: enabled — prefer Server Components; add `"use client"` only when needed (hooks, events, browser APIs)
+
+## Design tokens
+
+Use semantic tokens from `app/globals.css`. Do not hardcode colors like `bg-zinc-50`, `text-black`, or hex values in new UI.
+
+```tsx
+// ❌ BAD
+<div className="bg-zinc-50 text-black dark:bg-black">
+
+// ✅ GOOD
+<div className="bg-background text-foreground">
+<Button variant="outline">Save</Button>
+```
+
+Available tokens: `background`, `foreground`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `border`, `input`, `ring`, `card`, `popover`, `sidebar-*`, `chart-*`.
+
+Dark mode uses the `.dark` class (`@custom-variant dark` in globals.css).
+
+## Adding components
+
+Use the shadcn CLI — do not hand-copy from docs without matching this project's style:
+
+```bash
+bunx shadcn@latest add <component>
+```
+
+New primitives go in `components/ui/`. Feature/section components go in `components/`.
+
+## Component patterns
+
+Follow existing `components/ui/button.tsx`:
+
+- Use `cva` for variants; export both the component and `*Variants`
+- Merge classes with `cn()` from `@/lib/utils`
+- Use `@/components/ui/*` imports (see `components.json` aliases)
+- Set `data-slot` on root elements (e.g. `data-slot="button"`)
+- Support `asChild` via Radix `Slot.Root` when composition is needed
+
+```tsx
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+
+export function SaveButton({ className }: { className?: string }) {
+  return (
+    <Button variant="default" size="sm" className={cn(className)}>
+      Save
+    </Button>
+  )
+}
+```
+
+## Styling rules
+
+- Use `cn()` for conditional/merged classes — never string-concatenate Tailwind classes
+- Extend shadcn components via `className` prop, not by duplicating variant logic
+- Use `next/image` for static images in `public/`
+- Typography: body uses `font-serif` (Lora) via layout; use `font-sans` / `font-mono` only when intentional
+
+## File layout
+
+```
+components/
+  ui/          # shadcn primitives (Button, Input, …)
+  *.tsx        # app-specific composed components
+app/
+  globals.css  # theme tokens + Tailwind imports — edit here for design system changes
+  **/*.tsx     # pages and layouts
+```
+
+## Do not
+
+- Add a legacy `tailwind.config.js` — this project uses Tailwind v4 CSS-first setup
+- Edit generated shadcn files heavily — prefer wrapping in a composed component
+- Use inline styles or arbitrary hex colors when a semantic token exists
+- Import Radix primitives directly in pages — use `@/components/ui/*` wrappers

@@ -1,0 +1,18 @@
+---
+description: Git rules
+globs: ["**/*"]
+alwaysApply: false
+---
+
+COMMITS:
+feat:
+fix:
+refactor:
+docs:
+test:
+
+RULES:
+- small commits
+- no secrets
+- meaningful messages
+- one feature per commit

@@ -1,0 +1,43 @@
+---
+description: Next.js App Router patterns and conventions
+globs: ["app/**/*.tsx", "app/**/*.ts"]
+alwaysApply: false
+---
+
+# Next.js App Router Rules
+
+## Routing
+- Use App Router only (`app/`). Never use Pages Router.
+- Colocate route-specific components in the route folder
+- Use route groups `(group)` to organize without affecting URL
+- Use parallel routes `@slot` for dashboard layouts
+- Use intercepting routes for modals
+- Import with the `@/*` alias (maps to project root)
+
+## Components
+- Default to Server Components. Add `"use client"` only when needed:
+  - Interactive UI (onClick, onChange, etc.)
+  - Browser-only APIs
+  - React hooks
+- Never fetch data in Client Components — pass as props from Server Components
+
+## Data Fetching
+- Use Server Actions for mutations (not API routes)
+- Use `cache()` and `unstable_cache()` for memoization
+- Add `revalidatePath()` or `revalidateTag()` after mutations
+- Use `loading.tsx` for Suspense boundaries
+- Use `error.tsx` for error boundaries
+
+## Performance
+- Use `next/image` for all images
+- Use `next/font` for all fonts
+- Dynamic import heavy components: `const X = dynamic(() => import(...))`
+- Add `export const dynamic = 'force-static'` where possible
+
+## File Conventions
+- `page.tsx`       → Route page (Server Component)
+- `layout.tsx`     → Shared layout
+- `loading.tsx`    → Suspense fallback
+- `error.tsx`      → Error boundary
+- `not-found.tsx`  → 404 page
+- `route.ts`       → API route handler

@@ -1,0 +1,48 @@
+---
+description: Server Actions and API route conventions
+globs: ["app/api/**/*.ts", "features/**/actions.ts", "features/**/actions/**/*.ts"]
+alwaysApply: false
+---
+
+# Server Actions Rules
+
+## Structure
+- Place actions in `features/<feature>/actions.ts`
+- Always add `"use server"` at the top
+- Validate all inputs with Zod before processing
+- Check session + RBAC at the start of every action
+- Return typed results: `{ success: true, data } | { success: false, error: string }`
+
+## Template
+
+```tsx
+"use server"
+
+import { z } from "zod"
+import { getSession } from "@/lib/auth"
+import { db } from "@/lib/prisma"
+
+const schema = z.object({ ... })
+
+export async function myAction(input: unknown) {
+    const session = await getSession()
+    if (!session) return { success: false, error: "Unauthorized" }
+    const parsed = schema.safeParse(input)
+    if (!parsed.success) return { success: false, error: parsed.error.message }
+    try {
+        const result = await db....
+        return { success: true, data: result }
+    } catch (err) {
+        console.error(err)
+        return { success: false, error: "Something went wrong" }
+    }
+}
+```
+
+## API Routes
+- Use only for: webhooks, external callbacks, file streaming, SSE
+- For everything else, prefer Server Actions
+- Always validate request body with Zod
+- Always check auth before processing
+- Never expose internal error messages to the client
+

@@ -1,0 +1,43 @@
+---
+description: Prisma ORM and database conventions
+globs: ["prisma/**/*.prisma", "lib/prisma.ts", "features/**/repositories/**/*.ts"]
+alwaysApply: false
+---
+
+# Database Rules
+
+## Prisma
+- Schema: `prisma/schema.prisma` — client output is `../generated/prisma`
+- Config: `prisma.config.ts` (uses `DATABASE_URL` from env)
+- Keep a single Prisma client instance: `lib/prisma.ts`
+- Singleton client: `lib/prisma.ts` - Never instantiate PrismaClient directly outside of `lib/prisma.ts` - import this everywhere; do not instantiate `PrismaClient` elsewhere
+- Auth models (`User`, `Session`, `Account`, `Verification`) are managed by Better Auth — extend carefully
+- Use transactions for multi-step mutations: `db.$transaction([])`
+- Paginate all list queries — never return unbounded results
+- Use `select` to fetch only needed fields
+- Always add indexes for foreign keys and frequently filtered columns
+
+After schema changes:
+
+```bash
+bunx prisma migrate dev
+bunx prisma generate
+```
+
+Do not commit or hand-edit files in `generated/prisma/` (gitignored).
+
+## Repository Pattern
+- Place DB access in `features/<feature>/repositories/`
+- Repositories are the ONLY place Prisma is called
+- Application layer calls repositories, never Prisma directly
+
+## Schema Conventions
+- All models use `id String @id @default(cuid())`
+- All models have `createdAt` and `updatedAt` timestamps
+- Use explicit relation field names
+- Soft delete with `deletedAt DateTime?` where needed
+- All enums defined in Prisma schema, not TypeScript
+
+## Multi-tenant / RBAC Data Isolation
+- Always scope queries to the authenticated user's department/role
+- Never return cross-department data without admin role check

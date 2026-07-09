@@ -1,0 +1,16 @@
+---
+description: Notification system rules
+globs: ["features/notifications/**/*"]
+alwaysApply: false
+---
+
+SEND:
+- deadline alerts
+- feedback updates
+- meeting reminders
+- approval updates
+
+SUPPORT:
+- email
+- in-app
+- real-time (socket.io)

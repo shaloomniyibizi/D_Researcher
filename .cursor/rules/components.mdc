@@ -1,0 +1,62 @@
+---
+description: React component and UI patterns
+globs: ["components/**/*.tsx", "features/**/components/**/*.tsx"]
+alwaysApply: false
+---
+
+# Component Rules
+
+## Structure
+- Shared components: `components/ui/` (Shadcn) and `components/shared/`
+- Feature components: `features/<feature>/components/`
+- Each component in its own file, named with PascalCase
+
+## Patterns
+- Prefer Server Components by default
+- Use Shadcn UI primitives — don't build from scratch what Shadcn provides
+- Use `cn()` utility for conditional classNames
+- Forms: always React Hook Form + Zod schema
+- Loading states: Skeleton components, not spinners
+- Empty states: always handle explicitly
+- Error states: always handle explicitly
+
+## Forms Template
+
+```tsx
+"use client"
+
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import CustomFormField, {FormFieldType} from "@/components/shared/custom-form-field";
+
+const schema = z.object({ ... })
+type FormValues = z.infer<typeof schema>
+export function MyForm() {
+    const form = useForm<FormValues>({ resolver: zodResolver(schema) })
+    async function onSubmit(values: FormValues) { ... }
+    return ( 
+    <form id="form-id" onSubmit={form.handleSubmit(onSubmit)}>
+        <CustomFormField
+            fieldType={FormFieldType....}
+            id="..."
+            control={form.control}
+            name="..."
+            placeholder="..."
+            label="..."
+            type="..."
+            autoCapitalize="..."
+            autoComplete="..."
+            autoCorrect="..."
+            disabled={...}
+        />
+    </form> 
+    )
+}
+```
+
+## Accessibility
+- All interactive elements must be keyboard navigable
+- All images must have alt text
+- Use semantic HTML elements
+- Radix UI primitives handle ARIA by default — don't override without reason

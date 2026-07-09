@@ -1,0 +1,65 @@
+---
+description: Auth and RBAC patterns using Better Auth
+globs: ["lib/auth*.ts", "features/auth/**/*.ts", "proxy.ts"]
+alwaysApply: false
+---
+
+# Auth Rules
+
+## Better Auth Setup
+- Auth config lives in `lib/auth.ts`
+- Client helpers in `lib/auth-client.ts`
+- Session type extended with `role` and `departmentId`
+
+| File | Purpose |
+|------|---------|
+| `lib/auth.ts` | Server-side `auth` instance (Prisma adapter, email/password, Google, GitHub) |
+| `lib/auth-client.ts` | Client hooks: `signIn`, `signUp`, `signOut`, `useSession` |
+| `app\api\auth\[...all]\route.ts` | Auth API handler via `toNextJsHandler` |
+
+- Server: import `auth` from `@/lib/auth`
+- Client: import from `@/lib/auth-client` — never import server auth in client components
+- OAuth credentials come from env (`GOOGLE_*`, `GITHUB_*`)
+
+## RBAC Enforcement
+- Define roles: `student | supervisor | admin`
+- Check role in EVERY server action and API route
+- Use a shared helper: `requireRole(session, "admin")`
+- Never trust client-side role claims — always verify server-side
+
+## Route Protection
+- Use `proxy.ts` to protect routes by role prefix:
+  - `/student/*`    → student only
+  - `/supervisor/*` → supervisor only
+  - `/admin/*`      → admin only
+- Redirect unauthenticated users to `/login`
+
+## Session
+- Session includes: `userId`, `role`, `departmentId`, `email`
+- Short-lived access tokens + refresh token rotation
+- HTTP-only cookies only — never store tokens in localStorage
+
+## Environment variables
+
+- Secrets live in `.env` — never commit `.env*` files
+- Required vars include `DATABASE_URL` and OAuth client credentials
+- Access via `process.env.VAR_NAME` in server code only
+- Do not expose secrets in client components or `NEXT_PUBLIC_*` unless intentionally public
+
+## Code standards
+
+- Keep changes minimal and scoped to the task
+- Match existing patterns before introducing new abstractions
+- Run `bun lint` after substantive changes
+- Do not add markdown/docs files unless asked
+- Do not create commits unless explicitly requested
+
+## Commands
+
+```bash
+bun dev                          # Dev server
+bun run build                    # Production build
+bun lint                         # ESLint
+bunx prisma migrate dev          # Apply migrations
+bunx shadcn@latest add <name>    # Add UI component
+```

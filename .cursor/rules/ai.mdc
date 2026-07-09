@@ -1,0 +1,46 @@
+---
+description: AI service patterns for Gemini, Pinecone, LangChain, and RAG
+globs: ["features/ai/**/*.ts", "lib/ai/**/*.ts", "lib/pinecone*.ts", "lib/gemini*.ts"]
+alwaysApply: false
+---
+
+# AI Service Rules
+
+## Gemini API
+- Initialize once in `lib/gemini.ts`
+- Use `gemini-1.5-pro` for generation, `text-embedding-004` for embeddings
+- Always set temperature, topP, maxOutputTokens explicitly
+- Apply rate limiting on all Gemini calls
+- Cache repeated generation results in Redis (TTL: 1h)
+
+## Pinecone
+- Initialize once in `lib/pinecone.ts`
+- Index naming: `research-{environment}` (e.g. `research-production`)
+- Always include metadata: `{ userId, documentId, chunkIndex, role }`
+- Filter by `userId` or `departmentId` on every query — never return cross-user vectors
+- Chunk size: 512 tokens, overlap: 50 tokens
+
+## RAG Pipeline
+
+// Standard RAG flow
+
+1. extractText(file)           // pdf-parse or similar
+2. chunkText(text, 512, 50)    // chunk with overlap
+3. embedChunks(chunks)         // Gemini embeddings
+4. upsertToPinecone(vectors)   // with metadata
+5. queryPinecone(queryEmbed)   // top-K=5, filter by userId
+6. buildPrompt(context, query) // system + retrieved chunks + question
+7. generateResponse(prompt)    // Gemini
+8. formatCitations(sources)    // map back to source docs
+
+
+## LangChain
+- Use for: complex chains, conditional flows, tool use
+- Keep chain definitions in `features/ai/chains/`
+- Log all chain inputs/outputs for debugging
+
+## Async Processing
+- Long AI operations (proposal gen, literature review) run as background jobs
+- Use a queue (BullMQ + Redis) for batch AI operations
+- Return a `jobId` immediately, poll for results
+- Stream responses where possible using Vercel AI SDK streaming

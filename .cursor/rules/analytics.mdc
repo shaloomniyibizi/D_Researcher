@@ -1,0 +1,17 @@
+---
+description: Analytics rules
+globs: ["features/analytics/**/*"]
+alwaysApply: false
+---
+
+TRACK:
+- Student progress
+- Supervisor workload
+- Submission rates
+- Risk scoring
+- Research trends
+
+VISUALIZE:
+- charts
+- dashboards
+- KPIs

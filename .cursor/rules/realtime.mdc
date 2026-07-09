@@ -1,0 +1,24 @@
+---
+description: Real-time communication patterns with Socket.io
+globs: ["lib/socket*.ts", "features/messaging/**/*.ts", "features/collaboration/**/*.ts"]
+alwaysApply: false
+---
+
+# Real-time Rules
+
+## Setup
+- Socket.io server: `lib/socket-server.ts`
+- Socket.io client: `lib/socket-client.ts`
+- Authenticate every socket connection with session token
+- Join rooms scoped to: `project:{id}`, `user:{id}`, `department:{id}`
+
+## Events Naming Convention
+- Client → Server: `client:action`  (e.g. `client:send-message`)
+- Server → Client: `server:event`   (e.g. `server:new-message`)
+- Errors:          `server:error`
+
+## Security
+- Validate all event payloads with Zod on the server
+- Check room membership before broadcasting
+- Rate limit events per socket connection
+- Never broadcast sensitive data — fetch from API on client after notification
