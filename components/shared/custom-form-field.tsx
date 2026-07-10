@@ -16,6 +16,7 @@ import { Control, Controller, ControllerRenderProps, FieldPath, FieldValues } fr
 import PhoneInput from "react-phone-number-input";
 import { Field, FieldDescription, FieldError, FieldLabel } from "../ui/field";
 import { Calendar } from "lucide-react";
+import "react-quill-new/dist/quill.snow.css";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), {
   ssr: false,
@@ -47,6 +48,7 @@ type CustomProps<TFieldValues extends FieldValues = FieldValues> = {
   autoCapitalize?: string;
   autoComplete?: string;
   autoCorrect?: string;
+  autoFocus?: boolean;
   children?: React.ReactNode;
   renderSkeleton?: (field: ControllerRenderProps<TFieldValues, FieldPath<TFieldValues>>) => React.ReactNode;
   fieldType: FormFieldType;
@@ -69,8 +71,14 @@ const RenderInput = <TFieldValues extends FieldValues = FieldValues>({ field, pr
             )}
             <div className="w-full">
               <Input
+                id={props.id ?? props.name}
                 placeholder={props.placeholder}
                 type={props.type}
+                disabled={props.disabled}
+                autoCapitalize={props.autoCapitalize}
+                autoComplete={props.autoComplete}
+                autoCorrect={props.autoCorrect}
+                autoFocus={props.autoFocus}
                 {...field}
                 className="w-full"
               />
@@ -86,8 +94,10 @@ const RenderInput = <TFieldValues extends FieldValues = FieldValues>({ field, pr
             <ReactQuill
               value={field.value}
               onChange={field.onChange}
+              onBlur={field.onBlur}
+              readOnly={props.disabled}
               theme="snow"
-              className="w-full rounded"
+              className="w-full [&_.ql-container]:min-h-32 [&_.ql-editor]:min-h-32"
               placeholder={props.placeholder}
             />
           </div>
@@ -150,9 +160,9 @@ const RenderInput = <TFieldValues extends FieldValues = FieldValues>({ field, pr
       return (
         <>
           <div className="w-full">
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select onValueChange={field.onChange} value={field.value} disabled={props.disabled}>
               <div className="w-full">
-                <SelectTrigger className="shad-select-trigger">
+                <SelectTrigger id={props.id ?? props.name} className="w-full">
                   <SelectValue placeholder={props.placeholder} />
                 </SelectTrigger>
               </div>
