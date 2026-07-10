@@ -1,5 +1,4 @@
-import {
-  BookAIcon,
+﻿import {
   BookOpen,
   Brain,
   ClipboardCheck,
@@ -86,3 +85,5 @@ export function FeaturesSection() {
     </section>
   )
 }
+
+

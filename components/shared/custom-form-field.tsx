@@ -1,6 +1,6 @@
 "use client"
 
-import { Checkbox } from "@/components/ui/checkbox"; 
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -9,12 +9,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { E164Number } from "libphonenumber-js/core";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import DatePicker from "react-datepicker";
-import { Control, Controller, ControllerFieldState, FieldValues } from "react-hook-form";
+import { Control, Controller, ControllerRenderProps, FieldPath, FieldValues } from "react-hook-form";
 import PhoneInput from "react-phone-number-input";
-import ReactQuill from "react-quill-new";
 import { Field, FieldDescription, FieldError, FieldLabel } from "../ui/field";
+import { Calendar } from "lucide-react";
+
+const ReactQuill = dynamic(() => import("react-quill-new"), {
+  ssr: false,
+});
 
 export enum FormFieldType {
   INPUT = "input",
@@ -26,9 +31,9 @@ export enum FormFieldType {
   SKELETON = "skeleton",
 }
 
-interface CustomProps {
-  control: Control<any>;
-  name: string;
+type CustomProps<TFieldValues extends FieldValues = FieldValues> = {
+  control: Control<TFieldValues>;
+  name: FieldPath<TFieldValues>;
   id?: string;
   label?: string;
   type?: string;
@@ -43,11 +48,11 @@ interface CustomProps {
   autoComplete?: string;
   autoCorrect?: string;
   children?: React.ReactNode;
-  renderSkeleton?: (field: any) => React.ReactNode;
+  renderSkeleton?: (field: ControllerRenderProps<TFieldValues, FieldPath<TFieldValues>>) => React.ReactNode;
   fieldType: FormFieldType;
 }
 
-const RenderInput = ({ field, props }: { field: FieldValues; props: CustomProps }) => {
+const RenderInput = <TFieldValues extends FieldValues = FieldValues>({ field, props }: { field: ControllerRenderProps<TFieldValues, FieldPath<TFieldValues>>; props: CustomProps<TFieldValues>; }) => {
   switch (props.fieldType) {
     case FormFieldType.INPUT:
       return (
@@ -78,12 +83,6 @@ const RenderInput = ({ field, props }: { field: FieldValues; props: CustomProps 
       return (
         <>
           <div className="w-full">
-            {/* <Textarea
-            placeholder={props.placeholder}
-            {...field}
-            className='shad-textArea'
-            disabled={props.disabled}
-          /> */}
             <ReactQuill
               value={field.value}
               onChange={field.onChange}
@@ -133,13 +132,7 @@ const RenderInput = ({ field, props }: { field: FieldValues; props: CustomProps 
     case FormFieldType.DATE_PICKER:
       return (
         <div className="border-dark-500 bg-dark-400 flex rounded-md border">
-          <Image
-            src="/assets/icons/calendar.svg"
-            height={24}
-            width={24}
-            alt="user"
-            className="ml-2"
-          />
+          <Calendar className="ml-2 mr-1 h-5 w-5 text-muted-foreground" />
           <div className="w-full">
             <DatePicker
               showTimeSelect={props.showTimeSelect ?? false}
@@ -150,7 +143,7 @@ const RenderInput = ({ field, props }: { field: FieldValues; props: CustomProps 
               wrapperClassName="date-picker"
             />
           </div>
-          <FieldDescription>{props.description}</FieldDescription>;
+          <FieldDescription>{props.description}</FieldDescription>
         </div>
       );
     case FormFieldType.SELECT:
@@ -178,7 +171,7 @@ const RenderInput = ({ field, props }: { field: FieldValues; props: CustomProps 
   }
 };
 
-const CustomFormField = (props: CustomProps) => {
+const CustomFormField = <TFieldValues extends FieldValues = FieldValues>(props: CustomProps<TFieldValues>) => {
 
   const { control, name, label } = props;
 
@@ -187,7 +180,7 @@ const CustomFormField = (props: CustomProps) => {
       control={control}
       name={name}
       disabled={props.disabled}
-      render={({ field, fieldState}: { field: FieldValues, fieldState: ControllerFieldState }) => (
+      render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid} className="w-full flex-1">
           {props.fieldType !== FormFieldType.CHECKBOX && label && (
             <FieldLabel htmlFor={name} className="shad-input-label">{label}</FieldLabel>
@@ -195,7 +188,7 @@ const CustomFormField = (props: CustomProps) => {
           <RenderInput field={field} props={props} />
 
           {fieldState.error && (
-          <FieldError className="shad-error" errors={[fieldState.error]}/>
+            <FieldError className="shad-error" errors={[fieldState.error]} />
           )}
         </Field>
       )}

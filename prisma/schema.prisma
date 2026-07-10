@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -12,23 +7,252 @@ datasource db {
   provider = "postgresql"
 }
 
+enum UserRole {
+  STUDENT
+  SUPERVISOR
+  ADMIN
+}
+
+enum UserStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum ProjectStatus {
+  IDEA
+  DRAFT_PROPOSAL
+  PROPOSAL_SUBMITTED
+  APPROVED
+  IN_PROGRESS
+  REVISION_REQUIRED
+  COMPLETED
+  DEFENDED
+  ARCHIVED
+}
+
+enum ProjectVisibility {
+  PRIVATE
+  DEPARTMENT
+  INSTITUTION
+  PUBLIC
+}
+
+enum ProjectMemberRole {
+  OWNER
+  COLLABORATOR
+  REVIEWER
+}
+
+enum MilestoneType {
+  IDEA_BRIEF
+  PROPOSAL
+  ETHICS_REVIEW
+  LITERATURE_REVIEW
+  IMPLEMENTATION
+  PROGRESS_REPORT
+  FINAL_REPORT
+  DEFENSE
+  CUSTOM
+}
+
+enum MilestoneStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  SUBMITTED
+  APPROVED
+  CHANGES_REQUESTED
+  OVERDUE
+}
+
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  ACCEPTED
+  CHANGES_REQUESTED
+  REJECTED
+}
+
+enum DocumentType {
+  IDEA_NOTE
+  PROPOSAL
+  LITERATURE_REVIEW
+  METHODOLOGY
+  IMPLEMENTATION_NOTE
+  PROGRESS_REPORT
+  FINAL_REPORT
+  DEFENSE_SLIDES
+  DATASET
+  CODE_ARCHIVE
+  OTHER
+}
+
+enum DocumentStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum SourceType {
+  JOURNAL_ARTICLE
+  CONFERENCE_PAPER
+  BOOK
+  THESIS
+  PREPRINT
+  DATASET
+  WEB_PAGE
+  REPORT
+  OTHER
+}
+
+enum CitationStatus {
+  TO_READ
+  READING
+  REVIEWED
+  CITED
+  EXCLUDED
+}
+
+enum AiJobType {
+  IDEA_GENERATION
+  PROPOSAL_DRAFT
+  LITERATURE_SEARCH
+  DOCUMENT_SUMMARY
+  RAG_INGESTION
+  RAG_QUERY
+  RUBRIC_FEEDBACK
+  DEFENSE_PREP
+}
+
+enum AiJobStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  BLOCKED
+  IN_REVIEW
+  DONE
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum MeetingStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  MISSED
+}
+
+enum EvaluationStatus {
+  DRAFT
+  SUBMITTED
+  FINALIZED
+}
+
+enum DefenseStatus {
+  SCHEDULED
+  PASSED
+  PASSED_WITH_CORRECTIONS
+  FAILED
+  POSTPONED
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  SOCKET
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+  ARCHIVED
+}
+
+enum RepositoryRecordType {
+  PAST_PROJECT
+  RESEARCH_PAPER
+  CAPSTONE_REPORT
+  DATASET
+  CODE_REPOSITORY
+}
+
 model User {
-  id            String    @id
-  name          String
-  email         String
-  emailVerified Boolean   @default(false)
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
+  id                    String     @id @default(cuid())
+  name                  String
+  email                 String
+  emailVerified         Boolean    @default(false)
+  image                 String?
+  role                  UserRole   @default(STUDENT)
+  status                UserStatus @default(ACTIVE)
+  departmentId          String?
+  studentNumber         String?
+  staffNumber           String?
+  bio                   String?
+  researchInterests     String[]   @default([])
+  onboardingCompletedAt DateTime?
+  lastActiveAt          DateTime?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+
+  department                  Department?              @relation("DepartmentUsers", fields: [departmentId], references: [id], onDelete: SetNull)
+  sessions                    Session[]
+  accounts                    Account[]
+  ownedProjects               Project[]                @relation("ProjectOwner")
+  supervisedProjects          Project[]                @relation("ProjectSupervisor")
+  projectMemberships          ProjectMember[]          @relation("ProjectMemberUser")
+  projectInvitationsSent      ProjectMember[]          @relation("ProjectMemberInviter")
+  createdMilestones           ProjectMilestone[]       @relation("MilestoneCreator")
+  submissions                 Submission[]             @relation("SubmissionAuthor")
+  feedbackAuthored            Feedback[]               @relation("FeedbackAuthor")
+  uploadedFiles               UploadedFile[]           @relation("UploadedBy")
+  createdDocuments            ResearchDocument[]       @relation("DocumentCreator")
+  documentVersions            DocumentVersion[]        @relation("DocumentVersionCreator")
+  createdSources              LiteratureSource[]       @relation("SourceCreator")
+  literatureNotes             LiteratureNote[]         @relation("LiteratureNoteAuthor")
+  aiConversations             AiConversation[]
+  aiMessages                  AiMessage[]              @relation("AiMessageAuthor")
+  aiJobs                      AiJob[]                  @relation("AiJobRequester")
+  createdTasks                ResearchTask[]           @relation("TaskCreator")
+  taskAssignments             TaskAssignee[]
+  comments                    Comment[]                @relation("CommentAuthor")
+  meetingsCreated             Meeting[]                @relation("MeetingCreator")
+  meetingAttendance           MeetingAttendee[]
+  rubricsCreated              Rubric[]                 @relation("RubricCreator")
+  evaluations                 Evaluation[]             @relation("Evaluator")
+  defenseCommitteeMemberships DefenseCommitteeMember[]
+  chairedDefenses             DefenseSession[]         @relation("DefenseChair")
+  notifications               Notification[]
+  activityLogs                ActivityLog[]            @relation("ActivityActor")
+  repositoryRecordsCreated    RepositoryRecord[]       @relation("RepositoryRecordCreator")
+  departmentsHeaded           Department[]             @relation("DepartmentHead")
 
   @@unique([email])
+  @@unique([studentNumber])
+  @@unique([staffNumber])
+  @@index([departmentId, role])
+  @@index([status])
   @@map("user")
 }
 
 model Session {
-  id        String   @id
+  id        String   @id @default(cuid())
   expiresAt DateTime
   token     String
   createdAt DateTime @default(now())
@@ -44,7 +268,7 @@ model Session {
 }
 
 model Account {
-  id                    String    @id
+  id                    String    @id @default(cuid())
   accountId             String
   providerId            String
   userId                String
@@ -59,12 +283,13 @@ model Account {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
+  @@unique([providerId, accountId])
   @@index([userId])
   @@map("account")
 }
 
 model Verification {
-  id         String   @id
+  id         String   @id @default(cuid())
   identifier String
   value      String
   expiresAt  DateTime
@@ -73,4 +298,797 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model Institution {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String
+  domain    String?
+  logoUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  departments       Department[]
+  rubrics           Rubric[]
+  repositoryRecords RepositoryRecord[]
+
+  @@unique([slug])
+  @@unique([domain])
+  @@map("institution")
+}
+
+model Department {
+  id            String   @id @default(cuid())
+  institutionId String
+  name          String
+  code          String
+  headId        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  institution        Institution         @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  head               User?               @relation("DepartmentHead", fields: [headId], references: [id], onDelete: SetNull)
+  users              User[]              @relation("DepartmentUsers")
+  projects           Project[]
+  sources            LiteratureSource[]
+  knowledgeDocuments KnowledgeDocument[]
+  rubrics            Rubric[]
+  notifications      Notification[]
+  activityLogs       ActivityLog[]
+  repositoryRecords  RepositoryRecord[]
+
+  @@unique([institutionId, code])
+  @@index([headId])
+  @@map("department")
+}
+
+model ResearchArea {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projects ProjectResearchArea[]
+  sources  SourceResearchArea[]
+
+  @@unique([slug])
+  @@map("research_area")
+}
+
+model Project {
+  id               String            @id @default(cuid())
+  departmentId     String
+  ownerId          String
+  supervisorId     String?
+  title            String
+  slug             String
+  abstract         String?
+  problemStatement String?
+  objectives       String[]          @default([])
+  keywords         String[]          @default([])
+  status           ProjectStatus     @default(IDEA)
+  visibility       ProjectVisibility @default(PRIVATE)
+  startedAt        DateTime?
+  approvedAt       DateTime?
+  defenseAt        DateTime?
+  archivedAt       DateTime?
+  deletedAt        DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  department       Department            @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  owner            User                  @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  supervisor       User?                 @relation("ProjectSupervisor", fields: [supervisorId], references: [id], onDelete: SetNull)
+  members          ProjectMember[]
+  milestones       ProjectMilestone[]
+  submissions      Submission[]
+  feedback         Feedback[]
+  documents        ResearchDocument[]
+  uploadedFiles    UploadedFile[]
+  sources          ProjectSource[]
+  conversations    AiConversation[]
+  aiJobs           AiJob[]
+  tasks            ResearchTask[]
+  comments         Comment[]
+  meetings         Meeting[]
+  evaluations      Evaluation[]
+  defenseSessions  DefenseSession[]
+  activityLogs     ActivityLog[]
+  researchAreas    ProjectResearchArea[]
+  repositoryRecord RepositoryRecord?
+
+  @@unique([departmentId, slug])
+  @@index([departmentId, status])
+  @@index([ownerId])
+  @@index([supervisorId])
+  @@index([deletedAt])
+  @@map("project")
+}
+
+model ProjectResearchArea {
+  id             String   @id @default(cuid())
+  projectId      String
+  researchAreaId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  researchArea ResearchArea @relation(fields: [researchAreaId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, researchAreaId])
+  @@index([researchAreaId])
+  @@map("project_research_area")
+}
+
+model ProjectMember {
+  id          String            @id @default(cuid())
+  projectId   String
+  userId      String
+  role        ProjectMemberRole @default(COLLABORATOR)
+  invitedById String?
+  joinedAt    DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User    @relation("ProjectMemberUser", fields: [userId], references: [id], onDelete: Cascade)
+  invitedBy User?   @relation("ProjectMemberInviter", fields: [invitedById], references: [id], onDelete: SetNull)
+
+  @@unique([projectId, userId])
+  @@index([userId])
+  @@index([invitedById])
+  @@map("project_member")
+}
+
+model ProjectMilestone {
+  id          String          @id @default(cuid())
+  projectId   String
+  createdById String?
+  title       String
+  description String?
+  type        MilestoneType   @default(CUSTOM)
+  status      MilestoneStatus @default(NOT_STARTED)
+  dueAt       DateTime?
+  completedAt DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  project     Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy   User?          @relation("MilestoneCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  submissions Submission[]
+  tasks       ResearchTask[]
+  comments    Comment[]
+
+  @@index([projectId, status])
+  @@index([dueAt])
+  @@index([createdById])
+  @@map("project_milestone")
+}
+
+model Submission {
+  id            String           @id @default(cuid())
+  projectId     String
+  milestoneId   String?
+  submittedById String
+  title         String
+  notes         String?
+  status        SubmissionStatus @default(SUBMITTED)
+  submittedAt   DateTime         @default(now())
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  project     Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  milestone   ProjectMilestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  submittedBy User              @relation("SubmissionAuthor", fields: [submittedById], references: [id], onDelete: Restrict)
+  files       UploadedFile[]
+  feedback    Feedback[]
+  evaluations Evaluation[]
+
+  @@index([projectId, status])
+  @@index([milestoneId])
+  @@index([submittedById])
+  @@index([submittedAt])
+  @@map("submission")
+}
+
+model Feedback {
+  id           String    @id @default(cuid())
+  projectId    String
+  submissionId String?
+  documentId   String?
+  authorId     String
+  body         String
+  resolvedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  project    Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  submission Submission?       @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  document   ResearchDocument? @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  author     User              @relation("FeedbackAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([projectId])
+  @@index([submissionId])
+  @@index([documentId])
+  @@index([authorId])
+  @@map("feedback")
+}
+
+model ResearchDocument {
+  id          String         @id @default(cuid())
+  projectId   String
+  createdById String
+  title       String
+  type        DocumentType   @default(OTHER)
+  status      DocumentStatus @default(DRAFT)
+  content     String?
+  wordCount   Int            @default(0)
+  lockedAt    DateTime?
+  publishedAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User              @relation("DocumentCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  versions  DocumentVersion[]
+  files     UploadedFile[]
+  feedback  Feedback[]
+  comments  Comment[]
+
+  @@index([projectId, type])
+  @@index([createdById])
+  @@index([status])
+  @@map("research_document")
+}
+
+model DocumentVersion {
+  id          String   @id @default(cuid())
+  documentId  String
+  createdById String
+  version     Int
+  title       String
+  content     String?
+  changeNote  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  document  ResearchDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  createdBy User             @relation("DocumentVersionCreator", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@unique([documentId, version])
+  @@index([createdById])
+  @@map("document_version")
+}
+
+model UploadedFile {
+  id           String   @id @default(cuid())
+  projectId    String?
+  documentId   String?
+  submissionId String?
+  uploadedById String
+  key          String
+  url          String
+  name         String
+  mimeType     String
+  sizeBytes    Int
+  checksum     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  project            Project?            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  document           ResearchDocument?   @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  submission         Submission?         @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  uploadedBy         User                @relation("UploadedBy", fields: [uploadedById], references: [id], onDelete: Restrict)
+  knowledgeDocuments KnowledgeDocument[]
+
+  @@unique([key])
+  @@index([projectId])
+  @@index([documentId])
+  @@index([submissionId])
+  @@index([uploadedById])
+  @@map("uploaded_file")
+}
+
+model LiteratureSource {
+  id           String     @id @default(cuid())
+  departmentId String?
+  createdById  String?
+  type         SourceType @default(OTHER)
+  title        String
+  abstract     String?
+  authors      String[]   @default([])
+  venue        String?
+  publisher    String?
+  year         Int?
+  doi          String?
+  isbn         String?
+  url          String?
+  pdfUrl       String?
+  citation     String?
+  metadata     Json?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  department    Department?          @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  createdBy     User?                @relation("SourceCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  projects      ProjectSource[]
+  knowledgeDocs KnowledgeDocument[]
+  researchAreas SourceResearchArea[]
+
+  @@unique([doi])
+  @@index([departmentId])
+  @@index([createdById])
+  @@index([year])
+  @@map("literature_source")
+}
+
+model SourceResearchArea {
+  id             String   @id @default(cuid())
+  sourceId       String
+  researchAreaId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  source       LiteratureSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  researchArea ResearchArea     @relation(fields: [researchAreaId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceId, researchAreaId])
+  @@index([researchAreaId])
+  @@map("source_research_area")
+}
+
+model ProjectSource {
+  id        String         @id @default(cuid())
+  projectId String
+  sourceId  String
+  status    CitationStatus @default(TO_READ)
+  relevance Int?
+  notes     String?
+  addedAt   DateTime       @default(now())
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  project   Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  source    LiteratureSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  notesList LiteratureNote[]
+
+  @@unique([projectId, sourceId])
+  @@index([sourceId])
+  @@index([status])
+  @@map("project_source")
+}
+
+model LiteratureNote {
+  id              String   @id @default(cuid())
+  projectSourceId String
+  authorId        String
+  quote           String?
+  note            String
+  page            String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  projectSource ProjectSource @relation(fields: [projectSourceId], references: [id], onDelete: Cascade)
+  author        User          @relation("LiteratureNoteAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([projectSourceId])
+  @@index([authorId])
+  @@map("literature_note")
+}
+
+model KnowledgeDocument {
+  id             String    @id @default(cuid())
+  departmentId   String?
+  sourceId       String?
+  uploadedFileId String?
+  title          String
+  textHash       String?
+  tokenCount     Int       @default(0)
+  metadata       Json?
+  indexedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  department   Department?       @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  source       LiteratureSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  uploadedFile UploadedFile?     @relation(fields: [uploadedFileId], references: [id], onDelete: SetNull)
+  chunks       KnowledgeChunk[]
+
+  @@index([departmentId])
+  @@index([sourceId])
+  @@index([uploadedFileId])
+  @@index([textHash])
+  @@map("knowledge_document")
+}
+
+model KnowledgeChunk {
+  id                  String   @id @default(cuid())
+  knowledgeDocumentId String
+  chunkIndex          Int
+  content             String
+  tokenCount          Int      @default(0)
+  vectorId            String?
+  metadata            Json?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  knowledgeDocument KnowledgeDocument @relation(fields: [knowledgeDocumentId], references: [id], onDelete: Cascade)
+
+  @@unique([knowledgeDocumentId, chunkIndex])
+  @@unique([vectorId])
+  @@index([knowledgeDocumentId])
+  @@map("knowledge_chunk")
+}
+
+model AiConversation {
+  id        String   @id @default(cuid())
+  projectId String?
+  userId    String
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project  Project?    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages AiMessage[]
+
+  @@index([projectId])
+  @@index([userId])
+  @@map("ai_conversation")
+}
+
+model AiMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  authorId       String?
+  role           String
+  content        String
+  citations      Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  conversation AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  author       User?          @relation("AiMessageAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId])
+  @@index([authorId])
+  @@map("ai_message")
+}
+
+model AiJob {
+  id            String      @id @default(cuid())
+  projectId     String?
+  requestedById String
+  type          AiJobType
+  status        AiJobStatus @default(QUEUED)
+  input         Json
+  output        Json?
+  error         String?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requestedBy User     @relation("AiJobRequester", fields: [requestedById], references: [id], onDelete: Restrict)
+
+  @@index([projectId])
+  @@index([requestedById])
+  @@index([type, status])
+  @@map("ai_job")
+}
+
+model ResearchTask {
+  id          String       @id @default(cuid())
+  projectId   String
+  milestoneId String?
+  createdById String
+  title       String
+  description String?
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  dueAt       DateTime?
+  completedAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  milestone ProjectMilestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  createdBy User              @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  assignees TaskAssignee[]
+  comments  Comment[]
+
+  @@index([projectId, status])
+  @@index([milestoneId])
+  @@index([createdById])
+  @@index([dueAt])
+  @@map("research_task")
+}
+
+model TaskAssignee {
+  id        String   @id @default(cuid())
+  taskId    String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task ResearchTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, userId])
+  @@index([userId])
+  @@map("task_assignee")
+}
+
+model Comment {
+  id          String    @id @default(cuid())
+  projectId   String?
+  documentId  String?
+  taskId      String?
+  milestoneId String?
+  authorId    String
+  parentId    String?
+  body        String
+  resolvedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project   Project?          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  document  ResearchDocument? @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  task      ResearchTask?     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  milestone ProjectMilestone? @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  author    User              @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  parent    Comment?          @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[]         @relation("CommentThread")
+
+  @@index([projectId])
+  @@index([documentId])
+  @@index([taskId])
+  @@index([milestoneId])
+  @@index([authorId])
+  @@index([parentId])
+  @@map("comment")
+}
+
+model Meeting {
+  id          String        @id @default(cuid())
+  projectId   String
+  createdById String
+  title       String
+  agenda      String?
+  notes       String?
+  startsAt    DateTime
+  endsAt      DateTime?
+  status      MeetingStatus @default(SCHEDULED)
+  meetingUrl  String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User              @relation("MeetingCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  attendees MeetingAttendee[]
+
+  @@index([projectId, startsAt])
+  @@index([createdById])
+  @@index([status])
+  @@map("meeting")
+}
+
+model MeetingAttendee {
+  id        String   @id @default(cuid())
+  meetingId String
+  userId    String
+  attended  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, userId])
+  @@index([userId])
+  @@map("meeting_attendee")
+}
+
+model Rubric {
+  id            String   @id @default(cuid())
+  institutionId String?
+  departmentId  String?
+  createdById   String
+  name          String
+  description   String?
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  institution Institution?      @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  department  Department?       @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  createdBy   User              @relation("RubricCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  criteria    RubricCriterion[]
+  evaluations Evaluation[]
+
+  @@index([institutionId])
+  @@index([departmentId])
+  @@index([createdById])
+  @@map("rubric")
+}
+
+model RubricCriterion {
+  id          String   @id @default(cuid())
+  rubricId    String
+  name        String
+  description String?
+  maxScore    Decimal  @db.Decimal(5, 2)
+  weight      Decimal  @db.Decimal(5, 2)
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  rubric Rubric            @relation(fields: [rubricId], references: [id], onDelete: Cascade)
+  scores EvaluationScore[]
+
+  @@index([rubricId])
+  @@map("rubric_criterion")
+}
+
+model Evaluation {
+  id           String           @id @default(cuid())
+  projectId    String
+  submissionId String?
+  rubricId     String
+  evaluatorId  String
+  status       EvaluationStatus @default(DRAFT)
+  totalScore   Decimal?         @db.Decimal(7, 2)
+  summary      String?
+  submittedAt  DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  project    Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  submission Submission?       @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+  rubric     Rubric            @relation(fields: [rubricId], references: [id], onDelete: Restrict)
+  evaluator  User              @relation("Evaluator", fields: [evaluatorId], references: [id], onDelete: Restrict)
+  scores     EvaluationScore[]
+
+  @@index([projectId])
+  @@index([submissionId])
+  @@index([rubricId])
+  @@index([evaluatorId])
+  @@map("evaluation")
+}
+
+model EvaluationScore {
+  id           String   @id @default(cuid())
+  evaluationId String
+  criterionId  String
+  score        Decimal  @db.Decimal(7, 2)
+  comment      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  evaluation Evaluation      @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+  criterion  RubricCriterion @relation(fields: [criterionId], references: [id], onDelete: Restrict)
+
+  @@unique([evaluationId, criterionId])
+  @@index([criterionId])
+  @@map("evaluation_score")
+}
+
+model DefenseSession {
+  id          String        @id @default(cuid())
+  projectId   String
+  chairId     String?
+  status      DefenseStatus @default(SCHEDULED)
+  venue       String?
+  meetingUrl  String?
+  scheduledAt DateTime
+  resultNotes String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  project   Project                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  chair     User?                    @relation("DefenseChair", fields: [chairId], references: [id], onDelete: SetNull)
+  committee DefenseCommitteeMember[]
+
+  @@index([projectId])
+  @@index([chairId])
+  @@index([scheduledAt])
+  @@map("defense_session")
+}
+
+model DefenseCommitteeMember {
+  id               String   @id @default(cuid())
+  defenseSessionId String
+  userId           String
+  role             String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  defenseSession DefenseSession @relation(fields: [defenseSessionId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([defenseSessionId, userId])
+  @@index([userId])
+  @@map("defense_committee_member")
+}
+
+model Notification {
+  id           String              @id @default(cuid())
+  userId       String
+  departmentId String?
+  channel      NotificationChannel @default(IN_APP)
+  status       NotificationStatus  @default(UNREAD)
+  title        String
+  body         String
+  actionUrl    String?
+  metadata     Json?
+  readAt       DateTime?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([departmentId])
+  @@index([createdAt])
+  @@map("notification")
+}
+
+model RepositoryRecord {
+  id             String               @id @default(cuid())
+  institutionId  String
+  departmentId   String?
+  projectId      String?              @unique
+  createdById    String?
+  type           RepositoryRecordType
+  title          String
+  abstract       String?
+  authors        String[]             @default([])
+  year           Int?
+  technologies   String[]             @default([])
+  supervisorName String?
+  fileUrl        String?
+  externalUrl    String?
+  metadata       Json?
+  publishedAt    DateTime?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  department  Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  project     Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  createdBy   User?       @relation("RepositoryRecordCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([institutionId, type])
+  @@index([departmentId])
+  @@index([createdById])
+  @@index([year])
+  @@map("repository_record")
+}
+
+model ActivityLog {
+  id           String   @id @default(cuid())
+  actorId      String?
+  departmentId String?
+  projectId    String?
+  action       String
+  entityType   String
+  entityId     String
+  metadata     Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  actor      User?       @relation("ActivityActor", fields: [actorId], references: [id], onDelete: SetNull)
+  department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  project    Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([actorId])
+  @@index([departmentId])
+  @@index([projectId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("activity_log")
 }

@@ -1,5 +1,4 @@
-import Link from "next/link"
-import { Menu } from "lucide-react"
+﻿import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
 // import { LandingMobileNav } from "@/components/landing/landing-mobile-nav"
@@ -39,10 +38,10 @@ export function LandingHeader() {
 
         <div className="hidden items-center gap-2 md:flex">
           <Button asChild variant="ghost" size="sm">
-            <Link href="/sign-in">Sign in</Link>
+            <Link href="/auth?mode=sign-in">Sign in</Link>
           </Button>
           <Button asChild size="sm">
-            <Link href="/sign-up">Get started</Link>
+            <Link href="/auth?mode=sign-up">Get started</Link>
           </Button>
         </div>
 
@@ -63,3 +62,4 @@ export function LandingHeader() {
     </header>
   )
 }
+
