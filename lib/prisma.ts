@@ -3,6 +3,11 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
+  connectionTimeoutMillis: 8_000,
+  idleTimeoutMillis: 30_000,
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10_000,
+  max: 5,
 });
 
 const globalForPrisma = global as unknown as {

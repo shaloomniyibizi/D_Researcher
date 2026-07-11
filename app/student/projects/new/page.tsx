@@ -5,6 +5,7 @@ import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 
 import { CreateProjectForm } from "@/features/projects/components/create-project-form"
+import { DatabaseUnavailable } from "@/components/shared/database-unavailable"
 import { getAvailableSupervisors } from "@/features/projects/repositories/project-repository"
 import { auth } from "@/lib/auth"
 
@@ -14,12 +15,26 @@ export const metadata: Metadata = {
 }
 
 export default async function NewStudentProjectPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  let session
+
+  try {
+    session = await auth.api.getSession({ headers: await headers() })
+  } catch (error) {
+    console.error("Could not connect to the database while loading the new-project page.", error)
+    return <DatabaseUnavailable />
+  }
 
   if (!session) redirect("/auth?mode=sign-in")
   if (session.user.role !== "STUDENT") notFound()
 
-  const supervisors = await getAvailableSupervisors(session.user.id)
+  let supervisors
+
+  try {
+    supervisors = await getAvailableSupervisors(session.user.id)
+  } catch (error) {
+    console.error("Could not connect to the database while loading supervisors.", error)
+    return <DatabaseUnavailable />
+  }
   if (!supervisors) redirect("/onboarding")
 
   return (
