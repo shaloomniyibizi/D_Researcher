@@ -147,6 +147,10 @@ export async function updateProject(projectId: string, input: unknown): Promise<
     revalidatePath("/student")
     revalidatePath("/student/projects")
     revalidatePath(`/student/projects/${projectIdResult.data}`)
+    revalidatePath("/supervisor")
+    revalidatePath("/supervisor/projects")
+    revalidatePath(`/supervisor/projects/${projectIdResult.data}`)
+    revalidatePath("/supervisor/notifications")
 
     return { success: true, data: { projectId: result.projectId } }
   } catch (error) {

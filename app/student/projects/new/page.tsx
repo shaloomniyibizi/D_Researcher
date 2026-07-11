@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description: "Start and structure a new university research project.",
 }
 
-export default async function NewStudentProjectPage() {
+export default async function NewStudentProjectPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   let session
 
   try {
@@ -36,6 +36,12 @@ export default async function NewStudentProjectPage() {
     return <DatabaseUnavailable />
   }
   if (!supervisors) redirect("/onboarding")
+  const query = await searchParams
+  const value = (key: string, max: number) => {
+    const candidate = query[key]
+    return typeof candidate === "string" ? candidate.slice(0, max) : ""
+  }
+  const initialValues = { title: value("title", 180), abstract: value("abstract", 2_000), problemStatement: value("problemStatement", 3_000), objectives: value("objectives", 2_000), keywords: value("keywords", 500) }
 
   return (
     <main className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-6 lg:p-8">
@@ -57,7 +63,7 @@ export default async function NewStudentProjectPage() {
         </div>
       </header>
 
-      <CreateProjectForm supervisors={supervisors} />
+      <CreateProjectForm supervisors={supervisors} initialValues={initialValues} />
     </main>
   )
 }

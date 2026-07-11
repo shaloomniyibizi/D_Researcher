@@ -14,7 +14,7 @@ import { sendProjectChatMessage } from "../actions"
 import type { ProjectChatData } from "../types"
 
 function formatTime(date: Date): string {
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat("en", {
     month: "short",
     day: "numeric",
     hour: "numeric",
@@ -41,7 +41,9 @@ export function ProjectChatRoom({
     endRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [data.messages])
   useEffect(() => {
-    const interval = window.setInterval(() => router.refresh(), 5_000)
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") router.refresh()
+    }, 15_000)
     return () => window.clearInterval(interval)
   }, [router])
 

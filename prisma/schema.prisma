@@ -251,6 +251,7 @@ model User {
   repositoryRecordsCreated    RepositoryRecord[]       @relation("RepositoryRecordCreator")
   departmentsHeaded           Department[]             @relation("DepartmentHead")
   projectChatMessages         ProjectChatMessage[]      @relation("ProjectChatMessageAuthor")
+  feedbackReplies             FeedbackReply[]           @relation("FeedbackReplyAuthor")
 
   @@unique([email])
   @@unique([studentNumber])
@@ -525,6 +526,7 @@ model Feedback {
   submissionId String?
   documentId   String?
   authorId     String
+  activityLogId String?
   body         String
   resolvedAt   DateTime?
   createdAt    DateTime  @default(now())
@@ -534,12 +536,31 @@ model Feedback {
   submission Submission?       @relation(fields: [submissionId], references: [id], onDelete: Cascade)
   document   ResearchDocument? @relation(fields: [documentId], references: [id], onDelete: Cascade)
   author     User              @relation("FeedbackAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  activityLog ActivityLog?     @relation(fields: [activityLogId], references: [id], onDelete: SetNull)
+  replies     FeedbackReply[]
 
   @@index([projectId])
   @@index([submissionId])
   @@index([documentId])
   @@index([authorId])
+  @@index([activityLogId])
   @@map("feedback")
+}
+
+model FeedbackReply {
+  id         String   @id @default(cuid())
+  feedbackId String
+  authorId   String
+  body       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  feedback Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  author   User     @relation("FeedbackReplyAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([feedbackId, createdAt])
+  @@index([authorId])
+  @@map("feedback_reply")
 }
 
 model ResearchDocument {
@@ -1118,6 +1139,7 @@ model ActivityLog {
   actor      User?       @relation("ActivityActor", fields: [actorId], references: [id], onDelete: SetNull)
   department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   project    Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  feedback   Feedback[]
 
   @@index([actorId])
   @@index([departmentId])

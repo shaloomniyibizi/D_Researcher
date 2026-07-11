@@ -186,7 +186,11 @@ export async function updateStudentProject(
         status: { notIn: ["DEFENDED", "ARCHIVED"] },
         department: { users: { some: { id: userId, role: "STUDENT", status: "ACTIVE" } } },
       },
-      select: { id: true, departmentId: true, title: true, slug: true },
+      select: {
+        id: true, departmentId: true, title: true, slug: true, abstract: true,
+        problemStatement: true, objectives: true, keywords: true,
+        visibility: true, supervisorId: true,
+      },
     })
 
     if (!project) return { success: false, reason: "PROJECT_NOT_FOUND" as const }
@@ -237,7 +241,17 @@ export async function updateStudentProject(
       select: { id: true },
     })
 
-    await db.activityLog.create({
+    const changes = [
+      { field: "title", before: project.title, after: input.title },
+      { field: "abstract", before: project.abstract, after: input.abstract },
+      { field: "problemStatement", before: project.problemStatement, after: input.problemStatement },
+      { field: "objectives", before: project.objectives, after: input.objectives },
+      { field: "keywords", before: project.keywords, after: input.keywords },
+      { field: "visibility", before: project.visibility, after: input.visibility },
+      { field: "supervisor", before: project.supervisorId, after: input.supervisorId },
+    ].filter((change) => JSON.stringify(change.before) !== JSON.stringify(change.after))
+
+    if (changes.length > 0) await db.activityLog.create({
       data: {
         actorId: userId,
         departmentId: project.departmentId,
@@ -245,7 +259,18 @@ export async function updateStudentProject(
         action: "project.updated",
         entityType: "Project",
         entityId: project.id,
-        metadata: { previousTitle: project.title, title: input.title },
+        metadata: { changes },
+      },
+    })
+
+    if (changes.length > 0 && input.supervisorId) await db.notification.create({
+      data: {
+        userId: input.supervisorId,
+        departmentId: project.departmentId,
+        channel: "IN_APP",
+        title: "Student updated a project",
+        body: `${input.title} has new changes ready for review.`,
+        actionUrl: `/supervisor/projects/${project.id}`,
       },
     })
 

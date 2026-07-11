@@ -25,8 +25,8 @@ function label(value: string): string {
   return value.toLowerCase().split("_").map((part) => part[0].toUpperCase() + part.slice(1)).join(" ")
 }
 
-function plainText(value: string | null): string {
-  return value?.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim() || "No project abstract has been added yet."
+function plainText(value: string | null) {
+  return <div dangerouslySetInnerHTML={{ __html: value || "No project abstract has been added yet." }}></div>
 }
 
 function date(value: Date): string {

@@ -49,9 +49,11 @@ function objectivesToHtml(objectives: string[]): string {
 export function CreateProjectForm({
   supervisors,
   project,
+  initialValues,
 }: {
   supervisors: SupervisorOption[]
   project?: EditableStudentProject
+  initialValues?: Partial<Pick<CreateProjectFormValues, "title" | "abstract" | "problemStatement" | "objectives" | "keywords">>
 }) {
   const router = useRouter()
   const [isPending, setIsPending] = useState(false)
@@ -59,11 +61,11 @@ export function CreateProjectForm({
   const form = useForm<CreateProjectFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: project?.title ?? "",
-      abstract: project?.abstract ?? "",
-      problemStatement: project?.problemStatement ?? "",
-      objectives: objectivesToHtml(project?.objectives ?? []),
-      keywords: project?.keywords.join(", ") ?? "",
+      title: project?.title ?? initialValues?.title ?? "",
+      abstract: project?.abstract ?? initialValues?.abstract ?? "",
+      problemStatement: project?.problemStatement ?? initialValues?.problemStatement ?? "",
+      objectives: project ? objectivesToHtml(project.objectives) : initialValues?.objectives ?? "",
+      keywords: project?.keywords.join(", ") ?? initialValues?.keywords ?? "",
       visibility: project?.visibility ?? "PRIVATE",
       supervisorId: project?.supervisorId ?? "unassigned",
     },

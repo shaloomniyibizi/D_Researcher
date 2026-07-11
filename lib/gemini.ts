@@ -1,10 +1,71 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
-import { generateText, type ModelMessage } from "ai"
+import { generateText, Output, type ModelMessage } from "ai"
+import { z } from "zod"
 
 const apiKey = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_GENERATIVE_AI_API_KEY
 const google = createGoogleGenerativeAI({ apiKey })
 
 export const isGeminiConfigured = Boolean(apiKey)
+
+export const researchIdeasSchema = z.object({
+  ideas: z.array(z.object({
+    title: z.string(),
+    problemStatement: z.string(),
+    proposedApproach: z.string(),
+    objectives: z.array(z.string()),
+    keywords: z.array(z.string()),
+    feasibility: z.enum(["LOW", "MEDIUM", "HIGH"]),
+    expectedContribution: z.string(),
+  })),
+})
+
+const generatedResearchIdeasSchema = z.object({
+  ideas: z.array(z.object({
+    title: z.string(),
+    problemStatement: z.string(),
+    proposedApproach: z.string(),
+    objectives: z.array(z.string()),
+    keywords: z.array(z.string()),
+    feasibility: z.string(),
+    expectedContribution: z.string(),
+  })),
+})
+
+function normalizeFeasibility(value: string): "LOW" | "MEDIUM" | "HIGH" {
+  const normalized = value.trim().toUpperCase()
+  return normalized === "LOW" || normalized === "HIGH" ? normalized : "MEDIUM"
+}
+
+export async function generateResearchIdeas(
+  input: {
+    discipline: string;
+    interests: string;
+    problemArea: string;
+    technologies: string;
+    constraints: string
+  }) {
+
+  if (!isGeminiConfigured) throw new Error("Gemini is not configured")
+  const result = await generateText({
+    model: google(process.env.GEMINI_MODEL ?? "gemini-2.5-pro"),
+    output: Output.object({ schema: generatedResearchIdeasSchema }),
+    system: "You are an academic research ideation expert. Propose original, ethical, feasible final-year university projects. Avoid invented evidence and overly broad topics. Each idea must define a specific problem, practical approach, measurable objectives, feasibility, and contribution.",
+    prompt: `Discipline: ${input.discipline}\nResearch interests: ${input.interests}\nProblem area: ${input.problemArea || "Open"}\nPreferred technologies or methods: ${input.technologies || "Open"}\nConstraints: ${input.constraints || "Typical final-year budget and timeline"}\nGenerate 4 distinct ideas tailored to this context.`,
+    temperature: 0.7, topP: 0.9, maxOutputTokens: 4_000, maxRetries: 2, timeout: { totalMs: 75_000 },
+  })
+  const ideas = result.output.ideas.slice(0, 5).map((idea) => ({
+    title: idea.title.trim().slice(0, 180),
+    problemStatement: idea.problemStatement.trim().slice(0, 1_000),
+    proposedApproach: idea.proposedApproach.trim().slice(0, 800),
+    objectives: idea.objectives.map((value) => value.trim().slice(0, 240)).filter(Boolean).slice(0, 5),
+    keywords: idea.keywords.map((value) => value.trim().slice(0, 60)).filter(Boolean).slice(0, 8),
+    feasibility: normalizeFeasibility(idea.feasibility),
+    expectedContribution: idea.expectedContribution.trim().slice(0, 500),
+  })).filter((idea) => idea.title && idea.problemStatement && idea.proposedApproach)
+
+  if (ideas.length < 3) throw new Error("Gemini returned too few usable research ideas")
+  return ideas
+}
 
 export async function generateResearchResponse(input: {
   messages: Array<{ role: "user" | "assistant"; content: string }>

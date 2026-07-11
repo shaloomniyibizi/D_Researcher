@@ -135,7 +135,8 @@ export default async function StudentProjectPage({ params }: { params: Promise<{
                         ) : null}
                         {milestone.dueAt ? (
                           <p className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground">
-                            <CalendarDays className="size-3" /> {date(milestone.dueAt)}
+                            <CalendarDays className="size-3" />
+                            {date(milestone.dueAt)}
                           </p>
                         ) : null}
                       </div>
