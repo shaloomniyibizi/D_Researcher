@@ -8,6 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { getStudentProjectDetails } from "@/features/projects/repositories/project-repository"
+import { ChapterEditor } from "@/features/chapters/components/chapter-editor"
+import { getProjectChapters } from "@/features/chapters/repositories/chapter-repository"
 import { auth } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 
@@ -28,6 +30,8 @@ export default async function StudentProjectPage({ params }: { params: Promise<{
   const { projectId } = await params
   const project = await getStudentProjectDetails(session.user.id, projectId)
   if (!project) notFound()
+  const chapters = await getProjectChapters(session.user.id, projectId)
+  if (!chapters) notFound()
 
   return (
     <main className="mx-auto w-full max-w-[1500px] space-y-6 p-4 sm:p-6 lg:p-8">
@@ -105,6 +109,7 @@ export default async function StudentProjectPage({ params }: { params: Promise<{
               </div>
             </CardContent>
           </Card>
+          <ChapterEditor projectId={project.id} chapters={chapters} isOwner={project.owner.id === session.user.id} />
           <Card>
             <CardHeader className="border-b">
               <CardTitle>Milestones</CardTitle>
