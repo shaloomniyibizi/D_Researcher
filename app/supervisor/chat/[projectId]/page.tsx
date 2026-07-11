@@ -13,5 +13,5 @@ export default async function SupervisorChatRoomPage({ params }: { params: Promi
   const { projectId } = await params
   const data = await getProjectChatData(session.user.id, UserRole.SUPERVISOR, projectId)
   if (!data) notFound()
-  return <ProjectChatRoom data={data} currentUserId={session.user.id} basePath="/supervisor/chat" />
+  return <main className="mx-auto max-w-7xl p-4 md:p-6"><ProjectChatRoom data={data} currentUserId={session.user.id} basePath="/supervisor/chat" /></main>
 }

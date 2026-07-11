@@ -37,7 +37,9 @@ export function ProjectChatRoom({
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  useEffect(() => endRef.current?.scrollIntoView({ behavior: "smooth" }), [data.messages])
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [data.messages])
   useEffect(() => {
     const interval = window.setInterval(() => router.refresh(), 5_000)
     return () => window.clearInterval(interval)
