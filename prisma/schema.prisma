@@ -572,6 +572,8 @@ model ResearchDocument {
   status      DocumentStatus @default(DRAFT)
   content     String?
   wordCount   Int            @default(0)
+  sortOrder   Int            @default(0)
+  isChapter   Boolean        @default(false)
   lockedAt    DateTime?
   publishedAt DateTime?
   createdAt   DateTime       @default(now())
@@ -585,6 +587,7 @@ model ResearchDocument {
   comments  Comment[]
 
   @@index([projectId, type])
+  @@index([projectId, isChapter, sortOrder])
   @@index([createdById])
   @@index([status])
   @@map("research_document")
