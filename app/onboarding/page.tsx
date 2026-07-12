@@ -52,7 +52,7 @@ export default async function OnboardingPage() {
               <Alert variant="destructive">
                 <AlertTitle>No departments configured</AlertTitle>
                 <AlertDescription>
-                  Ask an administrator to seed or create departments before onboarding users.
+                  Ask an administrator to seed or create departments before onboarding users..
                 </AlertDescription>
               </Alert>
             )}
