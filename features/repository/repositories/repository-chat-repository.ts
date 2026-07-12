@@ -1,5 +1,11 @@
 import prisma from "@/lib/prisma"
 
+export async function getRepositoryChatHistory(userId: string) {
+  const conversation = await prisma.aiConversation.findFirst({ where: { userId, projectId: null, knowledgeDocumentId: null, title: { startsWith: "Repository assistant" } }, orderBy: { updatedAt: "desc" }, select: { id: true, messages: { where: { role: { in: ["user", "assistant"] } }, orderBy: { createdAt: "asc" }, take: 100, select: { id: true, role: true, content: true, createdAt: true } } } })
+  if (!conversation) return { conversationId: null, messages: [] }
+  return { conversationId: conversation.id, messages: conversation.messages.flatMap((message): Array<{ id: string; role: "user" | "assistant"; content: string; createdAt: Date }> => message.role === "user" || message.role === "assistant" ? [{ ...message, role: message.role }] : []) }
+}
+
 export async function prepareRepositoryChatTurn(input: { userId: string; conversationId: string | null; prompt: string }) {
   return prisma.$transaction(async (db) => {
     const student = await db.user.findFirst({ where: { id: input.userId, role: "STUDENT", status: "ACTIVE", department: { isNot: null } }, select: { department: { select: { institutionId: true } } } })

@@ -33,6 +33,7 @@ import { Input } from "@/components/ui/input"
 import { PastProjectCard } from "@/features/repository/components/past-project-card"
 import { RepositoryChatbot } from "@/features/repository/components/repository-chatbot"
 import { getStudentRepository } from "@/features/repository/repositories/repository-repository"
+import { getRepositoryChatHistory } from "@/features/repository/repositories/repository-chat-repository"
 import type { RepositoryFilters } from "@/features/repository/types"
 import { RepositoryRecordType } from "@/generated/prisma/client"
 import { auth } from "@/lib/auth"
@@ -103,6 +104,7 @@ export default async function StudentRepositoryPage({ searchParams }: { searchPa
 
   const filters = parseFilters(await searchParams)
   const data = await getStudentRepository(session.user.id, filters)
+  const chatHistory = await getRepositoryChatHistory(session.user.id)
 
   if (!data) redirect("/onboarding")
 
@@ -239,7 +241,7 @@ export default async function StudentRepositoryPage({ searchParams }: { searchPa
           </Button>
         </nav>
       ) : null}
-      <RepositoryChatbot />
+      <RepositoryChatbot initialConversationId={chatHistory.conversationId} initialMessages={chatHistory.messages} user={{ name: session.user.name, image: session.user.image ?? null }} />
     </main>
   )
 }
