@@ -12,6 +12,7 @@ import {
   Search,
   SlidersHorizontal,
   UserRound,
+  Plus,
 } from "lucide-react"
 import type { Metadata } from "next"
 import { headers } from "next/headers"
@@ -30,6 +31,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { PastProjectCard } from "@/features/repository/components/past-project-card"
+import { RepositoryChatbot } from "@/features/repository/components/repository-chatbot"
 import { getStudentRepository } from "@/features/repository/repositories/repository-repository"
 import type { RepositoryFilters } from "@/features/repository/types"
 import { RepositoryRecordType } from "@/generated/prisma/client"
@@ -110,7 +112,7 @@ export default async function StudentRepositoryPage({ searchParams }: { searchPa
   return (
     <main className="mx-auto w-full max-w-[1500px] space-y-6 p-4 sm:p-6 lg:p-8">
       <section className="rounded-lg border bg-card p-5 sm:p-7">
-        <div className="max-w-3xl">
+        <div className="flex flex-wrap items-start justify-between gap-4"><div className="max-w-3xl">
           <div className="mb-3 flex items-center gap-2 text-xs font-medium text-primary">
             <Library className="size-4" /> {data.institution.name}
           </div>
@@ -118,7 +120,7 @@ export default async function StudentRepositoryPage({ searchParams }: { searchPa
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
             Build on previous work by exploring institutional projects, papers, datasets, reports, and source code.
           </p>
-        </div>
+        </div><Button asChild><Link href="/student/repository/new"><Plus /> Add past project</Link></Button></div>
 
         <form method="get" className="mt-6 grid gap-3 md:grid-cols-[minmax(240px,1fr)_180px_200px_130px_auto]">
           <label className="relative">
@@ -237,6 +239,7 @@ export default async function StudentRepositoryPage({ searchParams }: { searchPa
           </Button>
         </nav>
       ) : null}
+      <RepositoryChatbot />
     </main>
   )
 }

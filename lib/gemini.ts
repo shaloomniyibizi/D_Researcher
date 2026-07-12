@@ -134,3 +134,9 @@ export async function generateDocumentChatResponse(input: {
 
   return result.text.trim()
 }
+
+export async function generateRepositoryProjectResponse(input: { messages: Array<{ role: "user" | "assistant"; content: string }>; projectContext: string }): Promise<string> {
+  if (!isGeminiConfigured) throw new Error("Gemini is not configured")
+  const result = await generateText({ model: google(process.env.GEMINI_MODEL ?? "gemini-2.5-pro"), system: ["You are an institutional research repository assistant covering past projects, research papers, and capstone reports.", "Use only the numbered repository records below. Never invent findings, methods, citations, or implementation details.", "Identify the record title when answering and distinguish records when comparing them.", "If the answer is absent, clearly say the repository material provided does not contain it.", `Repository material:\n${input.projectContext}`].join("\n\n"), messages: input.messages, temperature: 0.2, topP: 0.9, maxOutputTokens: 900, maxRetries: 2, timeout: { totalMs: 45_000 } })
+  return result.text.trim()
+}
