@@ -37,5 +37,6 @@ export type StudentRepositoryData = {
 
 export type PublishableProject = { id: string; title: string; status: string; alreadyPublished: boolean }
 export type PublishPastProjectResult = { success: true; data: { recordId: string } } | { success: false; error: string }
-export type RepositoryChatMessage = { id: string; role: "user" | "assistant"; content: string; createdAt: Date }
+export type RepositoryChatSource = { recordId: string; title: string; type: string; href: string }
+export type RepositoryChatMessage = { id: string; role: "user" | "assistant"; content: string; createdAt: Date; sources?: RepositoryChatSource[] }
 export type RepositoryChatResult = { success: true; data: { conversationId: string; message: RepositoryChatMessage } } | { success: false; error: string }

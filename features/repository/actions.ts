@@ -36,8 +36,8 @@ export async function chatWithPastProject(input: unknown): Promise<RepositoryCha
     if (!turn) return { success: false, error: "Past project not found." }
     if (turn.rateLimited) return { success: false, error: "Too many questions. Wait a minute and try again." }
     const answer = await generateRepositoryProjectResponse({ messages: turn.history, projectContext: turn.context })
-    const message = await saveRepositoryChatAnswer(turn.conversationId, answer)
-    return { success: true, data: { conversationId: turn.conversationId, message: { ...message, role: "assistant" } } }
+    const message = await saveRepositoryChatAnswer(turn.conversationId, answer, turn.sources)
+    return { success: true, data: { conversationId: turn.conversationId, message: { ...message, role: "assistant", sources: turn.sources } } }
   } catch (error) {
     console.error(error)
     return { success: false, error: "The project assistant is unavailable right now." }
