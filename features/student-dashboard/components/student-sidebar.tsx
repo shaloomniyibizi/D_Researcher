@@ -2,9 +2,7 @@
 
 import {
   Bell,
-  BookOpen,
   Bot,
-  CalendarDays,
   FileText,
   FolderKanban,
   GraduationCap,
@@ -15,7 +13,6 @@ import {
   MessageSquareText,
   Loader2,
   LogOut,
-  Settings,
   X,
 } from "lucide-react"
 import Link from "next/link"
@@ -29,14 +26,12 @@ import { cn } from "@/lib/utils"
 const navigation = [
   { label: "Overview", href: "/student", icon: LayoutDashboard },
   { label: "My research", href: "/student/projects", icon: FolderKanban },
-  { label: "Literature", href: "/student/literature", icon: BookOpen },
   { label: "AI workspace", href: "/student/ai", icon: Bot },
   { label: "Idea generator", href: "/student/ideas", icon: Lightbulb },
   { label: "Chat with PDF", href: "/student/documents", icon: FileText },
   { label: "Supervisor chat", href: "/student/chat", icon: MessageCircle },
   { label: "Feedback", href: "/student/feedback", icon: MessageSquareText },
   { label: "Repository", href: "/student/repository", icon: Library },
-  { label: "Meetings", href: "/student/meetings", icon: CalendarDays },
   { label: "Notifications", href: "/student/notifications", icon: Bell },
 ] as const
 
@@ -120,15 +115,9 @@ export function StudentSidebar({ mobile = false, onNavigate }: StudentSidebarPro
       </nav>
 
       <div className="border-t p-3">
-        <Link
-          href="/student/settings"
-          className="flex items-center gap-3 rounded-md px-3 py-2.5 text-xs text-sidebar-foreground/70 hover:bg-sidebar-accent"
-        >
-          <Settings className="size-4" /> Settings
-        </Link>
         <button
           type="button"
-          className="mt-1 flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-xs text-sidebar-foreground/70 hover:bg-destructive/10 hover:text-destructive disabled:pointer-events-none disabled:opacity-50"
+          className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-xs text-sidebar-foreground/70 hover:bg-destructive/10 hover:text-destructive disabled:pointer-events-none disabled:opacity-50"
           onClick={handleLogout}
           disabled={isSigningOut}
         >

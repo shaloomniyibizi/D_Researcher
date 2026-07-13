@@ -2,8 +2,6 @@
 
 import {
   Bell,
-  CalendarDays,
-  ClipboardCheck,
   FolderKanban,
   GraduationCap,
   LayoutDashboard,
@@ -12,9 +10,6 @@ import {
   Menu,
   MessageCircle,
   MessageSquareText,
-  Presentation,
-  Settings,
-  Star,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -30,11 +25,7 @@ import type { SupervisorProfile } from "../types";
 const navigation = [
   { label: "Dashboard", href: "/supervisor", icon: LayoutDashboard },
   { label: "Supervised projects", href: "/supervisor/projects", icon: FolderKanban },
-  { label: "Submissions", href: "/supervisor/submissions", icon: ClipboardCheck },
   { label: "Feedback", href: "/supervisor/feedback", icon: MessageSquareText },
-  { label: "Meetings", href: "/supervisor/meetings", icon: CalendarDays },
-  { label: "Evaluations", href: "/supervisor/evaluations", icon: Star },
-  { label: "Final defenses", href: "/supervisor/defenses", icon: Presentation },
   { label: "Project chat", href: "/supervisor/chat", icon: MessageCircle },
   { label: "Notifications", href: "/supervisor/notifications", icon: Bell },
 ] as const;
@@ -109,13 +100,6 @@ function Sidebar({ mobile, close }: { mobile?: boolean; close?: () => void }) {
         })}
       </nav>
       <div className="border-t p-3">
-        <Link
-          href="/supervisor/settings"
-          onClick={close}
-          className="flex items-center gap-3 rounded-md px-3 py-2.5 text-xs text-sidebar-foreground/70 hover:bg-sidebar-accent"
-        >
-          <Settings className="size-4" /> Settings
-        </Link>
         <button
           type="button"
           onClick={logout}
