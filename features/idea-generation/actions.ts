@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
 import { z } from "zod"
 import { UserRole } from "@/generated/prisma/client"
-import { generateResearchIdeas, isGeminiConfigured } from "@/lib/gemini"
+import { GeminiTemporarilyUnavailableError, generateResearchIdeas, isGeminiConfigured } from "@/lib/gemini"
 import { getServerSession } from "@/lib/server-session"
 import { completeIdeaGeneration, discardIdeaGeneration, failIdeaGeneration, prepareIdeaGeneration, saveIdeaGeneration } from "./repositories/idea-generation-repository"
 import type { GenerateIdeasResult, IdeaDecisionResult } from "./types"
@@ -46,8 +46,11 @@ export async function generateProjectIdeas(input: unknown): Promise<GenerateIdea
 
     return { success: true, data: { id: job.id, createdAt: job.createdAt, ideas } }
   } catch (error) {
-    console.error(error);
     if (jobId) await failIdeaGeneration(jobId).catch(console.error);
+    if (error instanceof GeminiTemporarilyUnavailableError) {
+      return { success: false, error: "The AI service is busy right now. Please try again in a few minutes." }
+    }
+    console.error("Idea generation failed", error);
     return { success: false, error: "Could not generate ideas right now. Please try again." }
   }
 }

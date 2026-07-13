@@ -11,15 +11,23 @@ const adapter = new PrismaPg({
 });
 
 const globalForPrisma = global as unknown as {
-  prisma: PrismaClient;
+  prisma?: PrismaClient;
+  prismaSchemaVersion?: string;
 };
 
+const PRISMA_SCHEMA_VERSION = "20260713170000"
+
 const db =
-  globalForPrisma.prisma ||
+  globalForPrisma.prismaSchemaVersion === PRISMA_SCHEMA_VERSION && globalForPrisma.prisma
+    ? globalForPrisma.prisma
+    :
   new PrismaClient({
     adapter,
   });
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = db
+  globalForPrisma.prismaSchemaVersion = PRISMA_SCHEMA_VERSION
+}
 
 export default db;

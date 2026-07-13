@@ -26,6 +26,7 @@ export type StudentDashboardData = {
     id: string
     title: string
     status: ProjectStatus
+    progress: number
     updatedAt: Date
     supervisor: { name: string; image: string | null } | null
     milestones: Array<{

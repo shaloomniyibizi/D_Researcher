@@ -5,6 +5,7 @@ import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { RichText } from "@/components/shared/rich-text"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { getStudentProjectDetails } from "@/features/projects/repositories/project-repository"
@@ -17,9 +18,6 @@ export const metadata: Metadata = { title: "Project Overview | Researcher" }
 
 function label(value: string): string {
   return value.toLowerCase().split("_").map((part) => part[0].toUpperCase() + part.slice(1)).join(" ")
-}
-function plainText(value: string | null) {
-  return <div dangerouslySetInnerHTML={{ __html: value || "" }}></div>
 }
 function date(value: Date | null): string { return value ? new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(value) : "No date" }
 export default async function StudentProjectPage({ params }: { params: Promise<{ projectId: string }> }) {
@@ -34,9 +32,9 @@ export default async function StudentProjectPage({ params }: { params: Promise<{
   if (!chapters) notFound()
 
   return (
-    <main className="mx-auto w-full max-w-[1500px] space-y-6 p-4 sm:p-6 lg:p-8">
+    <main className="mx-auto w-full max-w-375 space-y-6 p-4 sm:p-6 lg:p-8">
       <div className="flex items-center justify-between gap-3"><Button variant="ghost" size="sm" asChild><Link href="/student/projects"><ArrowLeft /> All projects</Link></Button>{project.owner.id === session.user.id && project.status !== "DEFENDED" && project.status !== "ARCHIVED" ? <Button variant="outline" size="sm" asChild><Link href={`/student/projects/${project.id}/edit`}><FilePenLine /> Edit project</Link></Button> : null}</div>
-      <header className="rounded-lg border bg-card p-5 sm:p-7">
+      <header className="min-w-0 overflow-hidden rounded-lg border bg-card p-5 sm:p-7">
         <div className="flex flex-wrap gap-2">
           <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-medium text-primary">
             {label(project.status)}
@@ -45,8 +43,8 @@ export default async function StudentProjectPage({ params }: { params: Promise<{
             {label(project.visibility)}
           </span>
         </div>
-        <h1 className="mt-4 max-w-4xl font-heading text-2xl font-semibold sm:text-3xl">{project.title}</h1>
-        <div className="mt-3 max-w-4xl text-sm leading-7 text-muted-foreground">{plainText(project.abstract)}</div>
+        <h1 className="mt-4 max-w-4xl break-words font-heading text-2xl font-semibold [overflow-wrap:anywhere] sm:text-3xl">{project.title}</h1>
+        <RichText value={project.abstract} className="mt-3 max-w-4xl text-sm leading-7 text-muted-foreground" />
         <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[11px] text-muted-foreground">
           <span>{project.department.institution.name}</span>
           <span>{project.department.name} ({project.department.code})</span>
@@ -78,8 +76,8 @@ export default async function StudentProjectPage({ params }: { params: Promise<{
           </Card>)}
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.7fr)]">
-        <div className="space-y-6">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.7fr)]">
+        <div className="min-w-0 space-y-6">
           <Card>
             <CardHeader className="border-b">
               <CardTitle>Research foundation</CardTitle>
@@ -88,7 +86,7 @@ export default async function StudentProjectPage({ params }: { params: Promise<{
             <CardContent className="space-y-5 pt-1">
               <div>
                 <h2 className="text-xs font-medium">Problem statement</h2>
-                <div className="mt-2 text-sm leading-7 text-muted-foreground">{plainText(project.problemStatement)}</div>
+                <RichText value={project.problemStatement} className="mt-2 text-sm leading-7 text-muted-foreground" />
               </div>
               <div>
                 <h2 className="text-xs font-medium">Objectives</h2>
@@ -155,7 +153,7 @@ export default async function StudentProjectPage({ params }: { params: Promise<{
           </Card>
         </div>
 
-        <aside className="space-y-6">
+        <aside className="min-w-0 space-y-6">
           <Card>
             <CardHeader className="border-b">
               <CardTitle>Research team</CardTitle>

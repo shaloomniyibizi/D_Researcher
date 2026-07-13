@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma"
+import { calculateProjectProgress } from "../project-progress"
 
 import type { CreateProjectInput, EditableStudentProject, StudentProjectDetails, StudentProjectSummary, SupervisorOption } from "../types"
 
@@ -32,6 +33,7 @@ export async function getStudentProjects(userId: string): Promise<StudentProject
       keywords: true,
       updatedAt: true,
       supervisor: { select: { name: true, image: true } },
+      documents: { where: { title: { startsWith: "[Chapter] " } }, take: 50, select: { status: true } },
       milestones: {
         where: { status: { not: "APPROVED" } },
         orderBy: [{ dueAt: "asc" }, { createdAt: "asc" }],
@@ -42,8 +44,9 @@ export async function getStudentProjects(userId: string): Promise<StudentProject
     },
   })
 
-  return projects.map(({ milestones, _count, ...project }) => ({
+  return projects.map(({ milestones, documents, _count, ...project }) => ({
     ...project,
+    progress: calculateProjectProgress(project.status, documents),
     nextMilestone: milestones[0] ?? null,
     counts: _count,
   }))

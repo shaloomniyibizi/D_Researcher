@@ -182,6 +182,10 @@ export default async function SupervisorDashboardPage() {
                           <span>{project.counts.submissions} submissions</span>
                           <span>{project.counts.tasks} tasks</span>
                         </div>
+                        <div className="mt-3">
+                          <div className="mb-1.5 flex justify-between text-[10px]"><span className="text-muted-foreground">Research progress</span><span className="font-medium">{project.progress}%</span></div>
+                          <progress value={project.progress} max={100} aria-label={`${project.title} progress`} className="h-1.5 w-full overflow-hidden rounded-full bg-muted accent-primary [&::-moz-progress-bar]:bg-primary [&::-webkit-progress-bar]:bg-muted [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-primary" />
+                        </div>
                         {project.nextMilestone ? (
                           <p className="mt-3 rounded-md border border-dashed p-2 text-[11px]">
                             <span className="font-medium">

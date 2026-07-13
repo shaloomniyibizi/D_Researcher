@@ -37,6 +37,7 @@ export type StudentProjectSummary = {
   title: string
   abstract: string | null
   status: ProjectStatus
+  progress: number
   visibility: ProjectVisibility
   keywords: string[]
   updatedAt: Date

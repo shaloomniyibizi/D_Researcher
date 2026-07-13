@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma"
+import { calculateProjectProgress } from "@/features/projects/project-progress"
 
 import type { StudentDashboardData, StudentShellProfile } from "../types"
 
@@ -54,6 +55,7 @@ export async function getStudentDashboardData(
         status: true,
         updatedAt: true,
         supervisor: { select: { name: true, image: true } },
+        documents: { where: { title: { startsWith: "[Chapter] " } }, take: 50, select: { status: true } },
         milestones: {
           where: { status: { not: "APPROVED" } },
           orderBy: [{ dueAt: "asc" }, { createdAt: "asc" }],
@@ -117,8 +119,9 @@ export async function getStudentDashboardData(
 
   return {
     profile,
-    projects: projects.map(({ _count, ...project }) => ({
+    projects: projects.map(({ _count, documents, ...project }) => ({
       ...project,
+      progress: calculateProjectProgress(project.status, documents),
       counts: _count,
     })),
     tasks,

@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma"
+import { calculateProjectProgress } from "@/features/projects/project-progress"
 
 import type { SupervisorDashboardData, SupervisorProfile } from "../types"
 
@@ -27,6 +28,7 @@ export async function getSupervisorDashboardData(userId: string): Promise<Superv
       select: {
         id: true, title: true, status: true, updatedAt: true,
         owner: { select: { name: true, image: true, studentNumber: true } },
+        documents: { where: { title: { startsWith: "[Chapter] " } }, take: 50, select: { status: true } },
         milestones: {
           where: { status: { not: "APPROVED" } },
           orderBy: [{ dueAt: "asc" }, { createdAt: "asc" }],
@@ -62,7 +64,7 @@ export async function getSupervisorDashboardData(userId: string): Promise<Superv
 
   return {
     profile,
-    projects: projects.map(({ milestones, _count, ...project }) => ({ ...project, nextMilestone: milestones[0] ?? null, counts: _count })),
+    projects: projects.map(({ milestones, documents, _count, ...project }) => ({ ...project, progress: calculateProjectProgress(project.status, documents), nextMilestone: milestones[0] ?? null, counts: _count })),
     submissions,
     meetings,
     unreadNotifications,

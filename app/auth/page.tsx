@@ -27,7 +27,7 @@ export default async function AuthPage({ searchParams }: PageProps) {
           </div>
           <div className='relative hidden bg-background md:block'>
             <Image
-              src='/images/placeholder.svg'
+              src='/images/placeholder.jpg'
               alt='Image'
               priority
               loading='eager'

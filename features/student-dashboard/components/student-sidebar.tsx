@@ -29,7 +29,7 @@ const navigation = [
   { label: "AI workspace", href: "/student/ai", icon: Bot },
   { label: "Idea generator", href: "/student/ideas", icon: Lightbulb },
   { label: "Chat with PDF", href: "/student/documents", icon: FileText },
-  { label: "Supervisor chat", href: "/student/chat", icon: MessageCircle },
+  { label: "chat room", href: "/student/chat", icon: MessageCircle },
   { label: "Feedback", href: "/student/feedback", icon: MessageSquareText },
   { label: "Repository", href: "/student/repository", icon: Library },
   { label: "Notifications", href: "/student/notifications", icon: Bell },
@@ -96,19 +96,19 @@ export function StudentSidebar({ mobile = false, onNavigate }: StudentSidebarPro
               : pathname.startsWith(item.href)
 
             return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2.5 text-xs text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-              active && "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
-            )}
-            aria-current={active ? "page" : undefined}
-            onClick={onNavigate}
-          >
-            <item.icon className="size-4" />
-            {item.label}
-          </Link>
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-md px-3 py-2.5 text-xs text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                  active && "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
+                )}
+                aria-current={active ? "page" : undefined}
+                onClick={onNavigate}
+              >
+                <item.icon className="size-4" />
+                {item.label}
+              </Link>
             )
           })()
         ))}

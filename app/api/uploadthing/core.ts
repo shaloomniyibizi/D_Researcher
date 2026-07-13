@@ -6,6 +6,7 @@ import { ingestKnowledgeDocument } from "@/features/knowledge-base/services/inge
 import { auth } from "@/lib/auth"
 import { UserRole } from "@/generated/prisma/client"
 import { z } from "zod"
+import { revalidatePath } from "next/cache"
 import { importChapterFile } from "@/features/chapters/services/import-chapter-file"
 
 const upload = createUploadthing()
@@ -23,6 +24,12 @@ export const uploadRouter = {
     })
     .onUploadComplete(async ({ metadata, file }) => {
       const result = await importChapterFile({ userId: metadata.userId, chapterId: metadata.chapterId, key: file.key, url: file.ufsUrl, name: file.name, size: file.size, mimeType: file.type })
+      if (result.success) {
+        revalidatePath(`/student/projects/${result.projectId}`)
+        revalidatePath("/student")
+        revalidatePath("/student/projects")
+        revalidatePath("/supervisor")
+      }
       return { imported: result.success }
     }),
   profileImage: upload({

@@ -15,6 +15,7 @@ export type SupervisorDashboardData = {
     id: string
     title: string
     status: ProjectStatus
+    progress: number
     updatedAt: Date
     owner: { name: string; image: string | null; studentNumber: string | null }
     nextMilestone: { title: string; status: string; dueAt: Date | null } | null

@@ -9,18 +9,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { E164Number } from "libphonenumber-js/core";
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import DatePicker from "react-datepicker";
 import { Control, Controller, ControllerRenderProps, FieldPath, FieldValues } from "react-hook-form";
 import PhoneInput from "react-phone-number-input";
 import { Field, FieldDescription, FieldError, FieldLabel } from "../ui/field";
 import { Calendar } from "lucide-react";
-import "react-quill-new/dist/quill.snow.css";
-
-const ReactQuill = dynamic(() => import("react-quill-new"), {
-  ssr: false,
-});
+import { RichTextEditor } from "./rich-text-editor";
 
 export enum FormFieldType {
   INPUT = "input",
@@ -91,13 +86,12 @@ const RenderInput = <TFieldValues extends FieldValues = FieldValues>({ field, pr
       return (
         <>
           <div className="w-full">
-            <ReactQuill
+            <RichTextEditor
               value={field.value}
               onChange={field.onChange}
               onBlur={field.onBlur}
-              readOnly={props.disabled}
-              theme="snow"
-              className="w-full [&_.ql-container]:min-h-32 [&_.ql-editor]:min-h-32"
+              disabled={props.disabled}
+              className="[&_.ql-container]:min-h-32 [&_.ql-editor]:min-h-32"
               placeholder={props.placeholder}
             />
           </div>

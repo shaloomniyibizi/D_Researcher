@@ -15,7 +15,7 @@ export async function importChapterFile(input: { userId: string; chapterId: stri
   const clean = content.trim().slice(0, 500_000)
   await prisma.$transaction([
     prisma.uploadedFile.create({ data: { projectId: chapter.projectId, documentId: chapter.id, uploadedById: input.userId, key: input.key, url: input.url, name: input.name, mimeType: input.mimeType, sizeBytes: input.size } }),
-    prisma.researchDocument.update({ where: { id: chapter.id }, data: { content: clean, wordCount: clean ? clean.split(/\s+/).length : 0 } }),
+    prisma.researchDocument.update({ where: { id: chapter.id }, data: { content: clean, wordCount: clean ? clean.split(/\s+/).length : 0, status: clean ? "IN_REVIEW" : "DRAFT", lockedAt: null } }),
   ])
-  return { success: true as const }
+  return { success: true as const, projectId: chapter.projectId }
 }

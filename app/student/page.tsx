@@ -28,25 +28,12 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { getStudentDashboardData } from "@/features/student-dashboard/repositories/student-dashboard-repository"
-import type { ProjectStatus } from "@/generated/prisma/client"
 import { auth } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
   title: "Student Dashboard | Researcher",
   description: "Track research projects, milestones, tasks, and supervision activity.",
-}
-
-const PROJECT_PROGRESS: Record<ProjectStatus, number> = {
-  IDEA: 8,
-  DRAFT_PROPOSAL: 18,
-  PROPOSAL_SUBMITTED: 28,
-  APPROVED: 35,
-  IN_PROGRESS: 62,
-  REVISION_REQUIRED: 70,
-  COMPLETED: 92,
-  DEFENDED: 100,
-  ARCHIVED: 100,
 }
 
 function formatLabel(value: string): string {
@@ -175,7 +162,7 @@ export default async function StudentDashboardPage() {
                 <div className="divide-y">
                   {data.projects.map((project) => {
                     const milestone = project.milestones[0]
-                    const progress = PROJECT_PROGRESS[project.status]
+                    const progress = project.progress
 
                     return (
                       <article key={project.id} className="py-5 first:pt-4 last:pb-1">
