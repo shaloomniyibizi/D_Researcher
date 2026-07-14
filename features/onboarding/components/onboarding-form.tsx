@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ArrowLeft, ArrowRight, Camera, Loader2, UserCheck } from "lucide-react"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import { toast } from "react-toastify"
@@ -81,7 +80,6 @@ export function OnboardingForm({
   departments,
   className,
 }: OnboardingFormProps) {
-  const router = useRouter()
   const [step, setStep] = useState(0)
   const [isPending, setIsPending] = useState(false)
   const [imageUrl, setImageUrl] = useState(user.image)
@@ -138,8 +136,7 @@ export function OnboardingForm({
     }
 
     toast.success("Your research profile is ready.")
-    router.replace(getRoleHome(user.role))
-    router.refresh()
+    window.location.replace(getRoleHome(user.role))
   }
 
   async function handleImageSelection(event: React.ChangeEvent<HTMLInputElement>) {

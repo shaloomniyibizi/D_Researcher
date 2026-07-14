@@ -1,6 +1,7 @@
 "use server"
 
 import { headers } from "next/headers"
+import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
 import { UserRole } from "@/generated/prisma/client"
@@ -81,6 +82,15 @@ export async function completeOnboarding(
     if (!updatedUser) {
       return { success: false, error: "Select a valid department." }
     }
+
+    const roleHome = role === UserRole.ADMIN
+      ? "/admin"
+      : role === UserRole.SUPERVISOR
+        ? "/supervisor"
+        : "/student"
+
+    revalidatePath("/onboarding")
+    revalidatePath(roleHome, "layout")
 
     return { success: true, error: null }
   } catch (error) {
