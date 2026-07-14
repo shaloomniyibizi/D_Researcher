@@ -26,10 +26,10 @@ import { cn } from "@/lib/utils"
 const navigation = [
   { label: "Overview", href: "/student", icon: LayoutDashboard },
   { label: "My research", href: "/student/projects", icon: FolderKanban },
-  { label: "AI workspace", href: "/student/ai", icon: Bot },
+  { label: "Chatbot", href: "/student/ai", icon: Bot },
   { label: "Idea generator", href: "/student/ideas", icon: Lightbulb },
   { label: "Chat with PDF", href: "/student/documents", icon: FileText },
-  { label: "chat room", href: "/student/chat", icon: MessageCircle },
+  { label: "Chat", href: "/student/chat", icon: MessageCircle },
   { label: "Feedback", href: "/student/feedback", icon: MessageSquareText },
   { label: "Repository", href: "/student/repository", icon: Library },
   { label: "Notifications", href: "/student/notifications", icon: Bell },

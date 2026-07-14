@@ -1,5 +1,8 @@
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { AuthMode, AuthTabs } from '@/components/web/auth-tabs';
 
 type PageProps = {
@@ -21,7 +24,13 @@ export default async function AuthPage({ searchParams }: PageProps) {
       <Card className='overflow-hidden p-0'>
         <CardContent className='grid p-0 md:grid-cols-2'>
           <div className='flex min-h-svh flex-col items-center justify-center bg-background p-6 md:p-10'>
-            <div className='w-full max-w-lg md:max-w-4xl bg-card'>
+            <div className='w-full max-w-lg bg-card md:max-w-4xl'>
+              <Button asChild variant='ghost' className='mb-4'>
+                <Link href='/'>
+                  <ArrowLeft aria-hidden='true' />
+                  Back to home
+                </Link>
+              </Button>
               <AuthTabs initialMode={mode} />
             </div>
           </div>

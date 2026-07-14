@@ -26,7 +26,7 @@ const navigation = [
   { label: "Dashboard", href: "/supervisor", icon: LayoutDashboard },
   { label: "Supervised projects", href: "/supervisor/projects", icon: FolderKanban },
   { label: "Feedback", href: "/supervisor/feedback", icon: MessageSquareText },
-  { label: "Project chat", href: "/supervisor/chat", icon: MessageCircle },
+  { label: "Chat", href: "/supervisor/chat", icon: MessageCircle },
   { label: "Notifications", href: "/supervisor/notifications", icon: Bell },
 ] as const;
 
