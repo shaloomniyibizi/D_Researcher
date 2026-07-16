@@ -4,6 +4,7 @@ import type { ProjectChapter } from "../types"
 
 const DEFAULT_CHAPTERS = ["Introduction", "Literature Review", "Methodology", "Results", "Discussion", "Conclusion and Recommendations"] as const
 const CHAPTER_PREFIX = "[Chapter] "
+const DEFAULT_CHAPTER_ORDER = new Map<string, number>(DEFAULT_CHAPTERS.map((title, index) => [title.toLocaleLowerCase(), index]))
 
 function access(userId: string, projectId: string) {
   return { id: projectId, deletedAt: null, OR: [{ ownerId: userId }, { members: { some: { userId, joinedAt: { not: null } } } }] }
@@ -14,7 +15,14 @@ export async function getProjectChapters(userId: string, projectId: string): Pro
   if (!project) return null
   const count = await prisma.researchDocument.count({ where: { projectId, title: { startsWith: CHAPTER_PREFIX } } })
   if (count === 0) await prisma.researchDocument.createMany({ data: DEFAULT_CHAPTERS.map((title) => ({ projectId, createdById: userId, title: `${CHAPTER_PREFIX}${title}`, isChapter: true, type: title === "Literature Review" ? "LITERATURE_REVIEW" : title === "Methodology" ? "METHODOLOGY" : "FINAL_REPORT" })) })
-  return prisma.researchDocument.findMany({ where: { projectId, title: { startsWith: CHAPTER_PREFIX } }, orderBy: { createdAt: "asc" }, take: 50, select: { id: true, title: true, content: true, status: true, wordCount: true, updatedAt: true, files: { orderBy: { createdAt: "desc" }, take: 20, select: { id: true, name: true, url: true, mimeType: true, sizeBytes: true } }, comments: { orderBy: { createdAt: "desc" }, take: 50, select: { id: true, body: true, selectionText: true, resolvedAt: true, createdAt: true, author: { select: { name: true } } } } } }).then((items) => items.map((item, sortOrder) => ({ ...item, title: item.title.slice(CHAPTER_PREFIX.length), sortOrder, content: item.content ?? "" })))
+  return prisma.researchDocument.findMany({ where: { projectId, title: { startsWith: CHAPTER_PREFIX } }, orderBy: [{ createdAt: "asc" }, { id: "asc" }], take: 50, select: { id: true, title: true, content: true, status: true, wordCount: true, updatedAt: true, files: { orderBy: { createdAt: "desc" }, take: 20, select: { id: true, name: true, url: true, mimeType: true, sizeBytes: true } }, comments: { orderBy: { createdAt: "desc" }, take: 50, select: { id: true, body: true, selectionText: true, resolvedAt: true, createdAt: true, author: { select: { name: true } } } } } }).then((items) => items
+    .map((item) => ({ ...item, title: item.title.slice(CHAPTER_PREFIX.length), content: item.content ?? "" }))
+    .sort((left, right) => {
+      const leftOrder = DEFAULT_CHAPTER_ORDER.get(left.title.toLocaleLowerCase()) ?? DEFAULT_CHAPTERS.length
+      const rightOrder = DEFAULT_CHAPTER_ORDER.get(right.title.toLocaleLowerCase()) ?? DEFAULT_CHAPTERS.length
+      return leftOrder - rightOrder
+    })
+    .map((item, sortOrder) => ({ ...item, sortOrder })))
 }
 
 export async function addChapter(userId: string, projectId: string, title: string) {
